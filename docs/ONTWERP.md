@@ -9,7 +9,8 @@ Je beheert 10 jaar (2026–2036) de parkeervoorzieningen van Maasstad: herkenbaa
 
 - Doelgroep: collega's Parkeren / Stadsbeheer.
 - Speelduur: ~15 min. 1 jaar ≈ 90 s, 40 kwartalen, pauze altijd mogelijk.
-- Stijl: SimCity-achtig, isometrische kaart (Phaser 3 + TypeScript).
+- Stijl: SimCity-achtig, 3D low-poly miniatuurstad (diorama, zacht licht, tilt-shift; referenties Mini Motorways / Islanders / Townscaper). Three.js + TypeScript, UI-laag in HTML/CSS.
+- Kwaliteitslat: voelt als een professioneel indiespel — tutorial, geluid, animaties, verzorgde UI.
 - Losse game, met online scorebord.
 
 ## 2. Spelverloop
@@ -100,8 +101,11 @@ Werven duurt 2 kwartalen (vacature → instroom) en er komen max 3 FTE per rol p
 ## 7. Score en scorebord
 
 - **Score** = gemiddelde blije Rotterdammer over 40 kwartalen × 100.
-  - Min 500 per kwartaal met een fondssaldo < 0.
-  - Min 50 per punt achterstallig onderhoud aan het eind (je mag de puinhoop niet doorschuiven).
+  - Min 60 per kwartaal met een fondssaldo < 0.
+  - Min 6 per punt achterstallig onderhoud aan het eind (je mag de puinhoop niet doorschuiven).
+  - Strafpunten zijn bewust klein (fase 2): je verliest via ontevreden Rotterdammers, niet via boetes.
+- **Onderuitputting:** bij de jaarafsluiting vloeit fondssaldo boven 5 M€ terug naar de algemene middelen. Oppotten heeft geen zin; geld moet aan het werk.
+- Startfonds 30 M€, jaarbudget 18 M€, vaste lasten 33 M€/jr (stand na fase 2, zie `docs/BALANS.md`).
 - **Eerlijk:** het scenario van de week heeft een vaste seed, dus iedereen krijgt dezelfde torens en kaarten.
 - **Scorebord:** bijnaam + afdeling (keuzelijst), filter op vulgaire namen, week- en all-time-lijst. Geen login, geen e-mail.
 - **Easter eggs leveren badges op, geen punten.** Zo blijft de ranglijst over beheer gaan.
@@ -153,7 +157,8 @@ Plus de kanttekening: "In het echt gaan parkeerinkomsten naar de algemene middel
 
 ```
 src/sim/      rekenmodel, puur TypeScript, geen graphics → draait in game én headless (node)
-src/game/     Phaser-scenes (kaart, UI, kaarten, eindscherm)
+src/game/     Three.js-scene (diorama, auto's, licht/weer) + HTML/CSS-UI (HUD, kaarten, tutorial, eindscherm), WebAudio-geluid
+prototype/    stijlproeven (los van de game)
 data/         config.json (alle getallen), events.json, eastereggs.json, scenario's
 tools/        bots + batch-runner voor balans (fase 2)
 ```
