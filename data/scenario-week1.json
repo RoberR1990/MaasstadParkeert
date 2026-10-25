@@ -1,0 +1,25 @@
+{
+  "name": "Week 1 - Merwehaven groeit",
+  "seed": 1,
+  "growth": [
+    { "quarter": 4,  "label": "Toren Merwehaven I",   "effects": [ { "target": "wijken.havenkwartier.newPop", "op": "add", "value": 900 }, { "target": "wijken.havenkwartier.visitors", "op": "add", "value": 60 }, { "target": "wijken.havenkwartier.bikeDemand", "op": "add", "value": 500 }, { "target": "wijken.havenkwartier.streetSpots", "op": "add", "value": 80 } ] },
+    { "quarter": 6,  "label": "Toren Merwehaven II",  "effects": [ { "target": "wijken.havenkwartier.newPop", "op": "add", "value": 900 }, { "target": "wijken.havenkwartier.visitors", "op": "add", "value": 60 }, { "target": "wijken.havenkwartier.bikeDemand", "op": "add", "value": 500 }, { "target": "wijken.havenkwartier.streetSpots", "op": "add", "value": 80 } ] },
+    { "quarter": 8,  "label": "Toren Merwehaven III", "effects": [ { "target": "wijken.havenkwartier.newPop", "op": "add", "value": 900 }, { "target": "wijken.havenkwartier.visitors", "op": "add", "value": 60 }, { "target": "wijken.havenkwartier.bikeDemand", "op": "add", "value": 500 }, { "target": "wijken.havenkwartier.streetSpots", "op": "add", "value": 80 } ] },
+    { "quarter": 10, "label": "Toren Merwehaven IV",  "effects": [ { "target": "wijken.havenkwartier.newPop", "op": "add", "value": 900 }, { "target": "wijken.havenkwartier.visitors", "op": "add", "value": 60 }, { "target": "wijken.havenkwartier.bikeDemand", "op": "add", "value": 500 }, { "target": "wijken.havenkwartier.streetSpots", "op": "add", "value": 80 } ] },
+    { "quarter": 10, "label": "Kopbrug-toren",        "effects": [ { "target": "wijken.kopbrug.newPop", "op": "add", "value": 1500 }, { "target": "wijken.kopbrug.visitors", "op": "add", "value": 300 }, { "target": "wijken.kopbrug.bikeDemand", "op": "add", "value": 800 } ] },
+    { "quarter": 12, "label": "Toren Merwehaven V",   "effects": [ { "target": "wijken.havenkwartier.newPop", "op": "add", "value": 900 }, { "target": "wijken.havenkwartier.visitors", "op": "add", "value": 60 }, { "target": "wijken.havenkwartier.bikeDemand", "op": "add", "value": 500 }, { "target": "wijken.havenkwartier.streetSpots", "op": "add", "value": 80 } ] },
+    { "quarter": 14, "label": "Toren Merwehaven VI",  "effects": [ { "target": "wijken.havenkwartier.newPop", "op": "add", "value": 900 }, { "target": "wijken.havenkwartier.visitors", "op": "add", "value": 60 }, { "target": "wijken.havenkwartier.bikeDemand", "op": "add", "value": 500 }, { "target": "wijken.havenkwartier.streetSpots", "op": "add", "value": 80 } ] },
+    { "quarter": 16, "label": "Pleinzuid uitbreiding", "effects": [ { "target": "wijken.pleinzuid.newPop", "op": "add", "value": 2500 }, { "target": "wijken.pleinzuid.visitors", "op": "add", "value": 1200 }, { "target": "wijken.pleinzuid.streetSpots", "op": "add", "value": 400 }, { "target": "wijken.pleinzuid.bikeDemand", "op": "add", "value": 1500 } ] },
+    { "quarter": 18, "label": "Toren Merwehaven VII", "effects": [ { "target": "wijken.havenkwartier.newPop", "op": "add", "value": 900 }, { "target": "wijken.havenkwartier.visitors", "op": "add", "value": 60 }, { "target": "wijken.havenkwartier.bikeDemand", "op": "add", "value": 500 }, { "target": "wijken.havenkwartier.streetSpots", "op": "add", "value": 80 } ] },
+    { "quarter": 22, "label": "Toren Merwehaven VIII", "effects": [ { "target": "wijken.havenkwartier.newPop", "op": "add", "value": 900 }, { "target": "wijken.havenkwartier.visitors", "op": "add", "value": 60 }, { "target": "wijken.havenkwartier.bikeDemand", "op": "add", "value": 500 }, { "target": "wijken.havenkwartier.streetSpots", "op": "add", "value": 80 } ] }
+  ],
+  "events": [
+    { "quarter": 1,  "label": "Wedstrijddag Kuipwijk", "effects": [ { "target": "wijken.kuipwijk.visitors", "op": "mul", "value": 1.8, "durationQuarters": 1 } ] },
+    { "quarter": 5,  "label": "Wedstrijddag Kuipwijk", "effects": [ { "target": "wijken.kuipwijk.visitors", "op": "mul", "value": 1.8, "durationQuarters": 1 } ] },
+    { "quarter": 9,  "label": "Wedstrijddag Kuipwijk", "effects": [ { "target": "wijken.kuipwijk.visitors", "op": "mul", "value": 1.8, "durationQuarters": 1 } ] },
+    { "quarter": 13, "label": "App-parkeren verdubbelt", "effects": [ { "target": "appShare", "op": "add", "value": 0.05 } ] },
+    { "quarter": 17, "label": "Havenfestival", "effects": [ { "target": "wijken.havenkwartier.visitors", "op": "mul", "value": 5, "durationQuarters": 1 } ] },
+    { "quarter": 21, "label": "Wedstrijddag Kuipwijk", "effects": [ { "target": "wijken.kuipwijk.visitors", "op": "mul", "value": 1.8, "durationQuarters": 1 } ] },
+    { "quarter": 24, "label": "Bezuinigingsronde", "effects": [ { "target": "yearBudget", "op": "add", "value": -1500000 } ] }
+  ]
+}

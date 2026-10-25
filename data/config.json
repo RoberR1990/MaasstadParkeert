@@ -1,0 +1,495 @@
+{
+ "quarters": 40,
+ "startYear": 2026,
+ "wijkOrder": [
+  "centrum",
+  "kopbrug",
+  "havenkwartier",
+  "oudwest",
+  "noord",
+  "plaswijk",
+  "pleinzuid",
+  "kuipwijk",
+  "rand"
+ ],
+ "neighbors": {
+  "centrum": [
+   "kopbrug",
+   "oudwest",
+   "noord",
+   "plaswijk"
+  ],
+  "kopbrug": [
+   "centrum",
+   "kuipwijk",
+   "pleinzuid",
+   "havenkwartier"
+  ],
+  "havenkwartier": [
+   "oudwest",
+   "centrum",
+   "noord"
+  ],
+  "oudwest": [
+   "centrum",
+   "noord",
+   "havenkwartier"
+  ],
+  "noord": [
+   "centrum",
+   "oudwest",
+   "rand",
+   "plaswijk"
+  ],
+  "plaswijk": [
+   "centrum",
+   "noord",
+   "rand"
+  ],
+  "pleinzuid": [
+   "kopbrug",
+   "kuipwijk"
+  ],
+  "kuipwijk": [
+   "kopbrug",
+   "pleinzuid"
+  ],
+  "rand": [
+   "noord",
+   "plaswijk"
+  ]
+ },
+ "finance": {
+  "startFonds": 10000000,
+  "yearBudget": 25000000,
+  "budgetEvery": 4,
+  "fixedOverheadPerYear": 31000000,
+  "wageInflation": 0.015,
+  "allowDebtBuild": false,
+  "repairCost": {
+   "garage": 2000000,
+   "stalling": 500000
+  }
+ },
+ "assets": {
+  "garage": {
+   "capex": 12000000,
+   "time": 4,
+   "opex": 250000,
+   "cap": 400,
+   "maxPerWijk": 3,
+   "removeStreetSpots": 150,
+   "staff": {
+    "schoonmaker": 0.5,
+    "monteur": 0.3
+   }
+  },
+  "automaat": {
+   "capex": 15000,
+   "time": 1,
+   "opex": 1000,
+   "automatenPerMonteur": 60,
+   "spotsPerAutomaat": 40
+  },
+  "scanauto": {
+   "capex": 80000,
+   "time": 1,
+   "opex": 15000,
+   "coverage": 4000,
+   "staff": {
+    "handhaver": 1,
+    "klantcontact": 0.5
+   }
+  },
+  "stalling": {
+   "capex": 3000000,
+   "time": 3,
+   "opex": 100000,
+   "cap": 1000,
+   "staff": {
+    "schoonmaker": 1
+   }
+  },
+  "nietjes": {
+   "capex": 50000,
+   "time": 1,
+   "opex": 2000,
+   "cap": 100,
+   "maxRacksPerWijk": 15
+  },
+  "pr": {
+   "capex": 4000000,
+   "time": 3,
+   "opex": 150000,
+   "cap": 500,
+   "onlyIn": "rand",
+   "minOv": 2,
+   "staff": {
+    "schoonmaker": 0.3
+   }
+  },
+  "hub": {
+   "capex": 300000,
+   "time": 1,
+   "opex": 50000,
+   "newCarReduction": 0.1,
+   "maxEffective": 3
+  }
+ },
+ "staff": {
+  "salary": {
+   "monteur": 70000,
+   "schoonmaker": 50000,
+   "handhaver": 60000,
+   "klantcontact": 55000
+  },
+  "hireDelay": 2,
+  "maxHirePerRolePerQuarter": 3,
+  "attritionPerQuarter": 0.008,
+  "startBuffer": 1.1,
+  "moodStart": 70,
+  "fireMoodHit": 6,
+  "moodRecover": 2,
+  "moodAttritionK": 1.0
+ },
+ "policy": {
+  "cooldownQuarters": 4,
+  "introQuarters": 2,
+  "tariffEur": {
+   "laag": 2,
+   "midden": 4,
+   "hoog": 6
+  },
+  "tariffDemand": {
+   "laag": 0.95,
+   "midden": 0.85,
+   "hoog": 0.7
+  },
+  "permitFactor": {
+   "ruim": 1.0,
+   "normaal": 0.92,
+   "krap": 0.8
+  },
+  "normCar": {
+   "hoog": 1.1,
+   "midden": 1.0,
+   "laag": 0.75
+  },
+  "normPrivate": {
+   "hoog": 0.9,
+   "midden": 0.6,
+   "laag": 0.3
+  },
+  "normLowSpillShare": 0.5,
+  "normLowNeedsOv": 2
+ },
+ "ov": {
+  "effectPerLevel": 0.08,
+  "maxLevel": 3,
+  "payPerYear": 2000000,
+  "payDelay": 2,
+  "lobbyChance": 0.3,
+  "lobbyCooldown": 4
+ },
+ "model": {
+  "seasonal": [
+   0.95,
+   1.0,
+   1.05,
+   1.0
+  ],
+  "noise": 0.03,
+  "minVisitorFactor": 0.3,
+  "search": {
+   "base": 2,
+   "threshold": 0.8,
+   "k": 40,
+   "max": 20
+  },
+  "compliance": {
+   "base": 0.6,
+   "gain": 0.35
+  },
+  "malfunction": {
+   "base": 0.02,
+   "k": 0.1
+  },
+  "errantShare": 0.25,
+  "waterbedShare": 0.3,
+  "appShare": {
+   "start": 0.55,
+   "end": 0.85,
+   "max": 0.95
+  },
+  "maintenance": {
+   "gain": 1,
+   "decay": 0.5,
+   "closeAt": 8,
+   "closedCapFactor": 0.5
+  },
+  "netheidPerRatio": 80,
+  "netheidRatioCap": 1.25,
+  "bikeGrowthPerYear": 0.03,
+  "paidHoursPerSpotQuarter": 300,
+  "garageRevenuePerSpotQuarter": 650,
+  "permitFeePerQuarter": 55,
+  "finesPerViolatingSpot": 12,
+  "objectionRate": 0.04,
+  "objectionsPerFTE": 120,
+  "startObjections": 300,
+  "prEffectPerSpot": 0.0002,
+  "prEffectCap": 0.2,
+  "prTargets": {
+   "centrum": 1.0,
+   "kopbrug": 0.5
+  }
+ },
+ "score": {
+  "weights": {
+   "bewoner": 0.25,
+   "ondernemer": 0.2,
+   "bezoeker": 0.15,
+   "fietser": 0.15,
+   "stad": 0.1,
+   "wethouder": 0.15
+  },
+  "searchBad": 14,
+  "waitSens": 3,
+  "bikeBad": 0.35,
+  "storingSens": 10,
+  "tariffSat": {
+   "laag": 100,
+   "midden": 75,
+   "hoog": 45
+  },
+  "shopWeights": {
+   "centrum": 1,
+   "pleinzuid": 0.7,
+   "kopbrug": 0.4,
+   "oudwest": 0.4,
+   "noord": 0.3,
+   "plaswijk": 0.1,
+   "kuipwijk": 0.1,
+   "rand": 0.1,
+   "havenkwartier": 0
+  },
+  "visitorWeights": {
+   "centrum": 0.55,
+   "kuipwijk": 0.2,
+   "kopbrug": 0.1,
+   "pleinzuid": 0.1,
+   "oudwest": 0.05
+  },
+  "bewonerParts": {
+   "search": 0.4,
+   "wait": 0.2,
+   "netheid": 0.2,
+   "bike": 0.2
+  },
+  "ondernemerParts": {
+   "search": 0.6,
+   "tariff": 0.4
+  },
+  "bezoekerParts": {
+   "search": 0.5,
+   "storing": 0.25,
+   "garage": 0.25
+  },
+  "stadParts": {
+   "netheid": 0.4,
+   "bike": 0.2,
+   "green": 0.4
+  },
+  "greenBase": 40,
+  "greenPerRemovedSpot": 0.15,
+  "wethouderParts": {
+   "budget": 0.4,
+   "incident": 0.3,
+   "klacht": 0.3
+  },
+  "fondsHappy": 10000000,
+  "fondsNegScale": 10000000,
+  "incidentPerClosed": 25,
+  "incidentPerNew": 10,
+  "klantBad": 600,
+  "klantPenaltyPer": 0.02,
+  "klantPenaltyMax": 25,
+  "introPenaltyBewoner": 8,
+  "introPenaltyWethouder": 6,
+  "negFondsPenaltyPerQuarter": 500,
+  "backlogPenaltyPerPoint": 50,
+  "scoreScale": 100
+ },
+ "start": {
+  "teamMood": 70,
+  "scanautos": 3,
+  "wijken": {
+   "centrum": {
+    "pop": 9000,
+    "carOwn": 0.18,
+    "visitors": 3400,
+    "streetSpots": 2600,
+    "garages": [
+     600,
+     450
+    ],
+    "garageBacklog": [
+     1,
+     2
+    ],
+    "bikeSpots": 5150,
+    "bikeDemand": 5600,
+    "paid": true,
+    "tariff": "hoog",
+    "permit": "normaal",
+    "norm": "midden",
+    "ov": 2,
+    "automaten": 60
+   },
+   "kopbrug": {
+    "pop": 6000,
+    "carOwn": 0.24,
+    "visitors": 900,
+    "streetSpots": 1500,
+    "garages": [
+     400
+    ],
+    "garageBacklog": [
+     1
+    ],
+    "bikeSpots": 3200,
+    "bikeDemand": 3500,
+    "paid": true,
+    "tariff": "midden",
+    "permit": "normaal",
+    "norm": "midden",
+    "ov": 2,
+    "automaten": 30
+   },
+   "havenkwartier": {
+    "pop": 500,
+    "carOwn": 0.3,
+    "visitors": 150,
+    "streetSpots": 900,
+    "garages": [],
+    "garageBacklog": [],
+    "bikeSpots": 450,
+    "bikeDemand": 500,
+    "paid": false,
+    "tariff": "midden",
+    "permit": "ruim",
+    "norm": "midden",
+    "ov": 0,
+    "automaten": 0
+   },
+   "oudwest": {
+    "pop": 15000,
+    "carOwn": 0.225,
+    "visitors": 800,
+    "streetSpots": 4200,
+    "garages": [],
+    "garageBacklog": [],
+    "bikeSpots": 11050,
+    "bikeDemand": 12000,
+    "paid": true,
+    "tariff": "midden",
+    "permit": "normaal",
+    "norm": "midden",
+    "ov": 2,
+    "automaten": 95
+   },
+   "noord": {
+    "pop": 12000,
+    "carOwn": 0.235,
+    "visitors": 600,
+    "streetSpots": 4000,
+    "garages": [],
+    "garageBacklog": [],
+    "bikeSpots": 6450,
+    "bikeDemand": 7000,
+    "paid": true,
+    "tariff": "laag",
+    "permit": "normaal",
+    "norm": "midden",
+    "ov": 1,
+    "automaten": 50
+   },
+   "plaswijk": {
+    "pop": 11000,
+    "carOwn": 0.4,
+    "visitors": 500,
+    "streetSpots": 6500,
+    "garages": [],
+    "garageBacklog": [],
+    "bikeSpots": 8300,
+    "bikeDemand": 9000,
+    "paid": false,
+    "tariff": "laag",
+    "permit": "ruim",
+    "norm": "midden",
+    "ov": 1,
+    "automaten": 0
+   },
+   "pleinzuid": {
+    "pop": 8000,
+    "carOwn": 0.35,
+    "visitors": 1900,
+    "streetSpots": 4500,
+    "garages": [
+     350
+    ],
+    "garageBacklog": [
+     1
+    ],
+    "bikeSpots": 4150,
+    "bikeDemand": 4500,
+    "paid": false,
+    "tariff": "midden",
+    "permit": "ruim",
+    "norm": "midden",
+    "ov": 1,
+    "automaten": 0
+   },
+   "kuipwijk": {
+    "pop": 9000,
+    "carOwn": 0.3,
+    "visitors": 900,
+    "streetSpots": 4200,
+    "garages": [],
+    "garageBacklog": [],
+    "bikeSpots": 5050,
+    "bikeDemand": 5500,
+    "paid": false,
+    "tariff": "midden",
+    "permit": "ruim",
+    "norm": "midden",
+    "ov": 1,
+    "automaten": 0
+   },
+   "rand": {
+    "pop": 13000,
+    "carOwn": 0.38,
+    "visitors": 300,
+    "streetSpots": 8000,
+    "garages": [],
+    "garageBacklog": [],
+    "bikeSpots": 8750,
+    "bikeDemand": 9500,
+    "paid": false,
+    "tariff": "laag",
+    "permit": "ruim",
+    "norm": "midden",
+    "ov": 1,
+    "automaten": 0
+   }
+  }
+ },
+ "bots": {
+  "reserve": 2000000,
+  "staffMargin": 1.1,
+  "paidBezTrigger": 0.85,
+  "garageBezTrigger": 0.95,
+  "bikeShortTrigger": 0.2,
+  "minSlack": 1000000
+ }
+}

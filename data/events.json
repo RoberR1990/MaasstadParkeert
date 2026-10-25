@@ -1,0 +1,1015 @@
+[
+  {
+    "id": "merwehaven-eerste-toren",
+    "categorie": "groei",
+    "titel": "Eerste woontoren aan de Merwehaven",
+    "tekst": "Op het oude haventerrein gaan de kranen draaien. Die toren komt er, en de vraag naar parkeerplekken ook.",
+    "wijk": "havenkwartier",
+    "vroegsteKwartaal": 5,
+    "keuzes": [
+      {
+        "label": "Parkeernorm laag vastleggen",
+        "uitleg": "Minder plekken in het plan, dus nu goedkoper, maar de auto's zoeken later hun heil in de buurwijken.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "wijken.havenkwartier.bewonersAuto", "op": "mul", "value": 0.7, "durationQuarters": null, "delayQuarters": 0 },
+          { "target": "wijken.plaswijk.bewonersAuto", "op": "add", "value": 150, "durationQuarters": null, "delayQuarters": 4 }
+        ]
+      },
+      {
+        "label": "Parkeernorm midden aanhouden",
+        "uitleg": "Een redelijke garage in het plan. Rustig, maar de bouw wordt er wel duurder van voor de ontwikkelaar.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "wijken.havenkwartier.garageplekken", "op": "add", "value": 200, "durationQuarters": null, "delayQuarters": 4 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "kopbrug-kantoortoren",
+    "categorie": "groei",
+    "titel": "Kantoortoren Kop van de Brug",
+    "tekst": "Er komt een kantoortoren met driehonderd werkplekken. Iedereen wil er met de auto naartoe, en de ontwikkelaar vraagt wat jij wilt.",
+    "wijk": "kopbrug",
+    "vroegsteKwartaal": 9,
+    "keuzes": [
+      {
+        "label": "Ontwikkelaar bouwt garage mee",
+        "uitleg": "Je krijgt nu geld in het fonds en een garage, maar die komt pas over een paar kwartalen.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "fonds", "op": "add", "value": 1.5, "durationQuarters": null, "delayQuarters": 0 },
+          { "target": "wijken.kopbrug.garageplekken", "op": "add", "value": 250, "durationQuarters": null, "delayQuarters": 3 }
+        ]
+      },
+      {
+        "label": "Geen eisen, meer verkeer",
+        "uitleg": "Geen extra gedoe voor de ontwikkelaar. Het verkeer neemt wel toe en de bewoners zijn er niet blij mee.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "wijken.kopbrug.bezoekers", "op": "add", "value": 300, "durationQuarters": null, "delayQuarters": 1 },
+          { "target": "persona.bewoner", "op": "add", "value": -4, "durationQuarters": 6, "delayQuarters": 1 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "pleinzuid-winkelcentrum-uitbreiding",
+    "categorie": "groei",
+    "titel": "Winkelcentrum Pleinzuid breidt uit",
+    "tekst": "Het winkelcentrum wil twee etages erbij. De ondernemers zijn blij, de fietsenrekken een stuk minder.",
+    "wijk": "pleinzuid",
+    "vroegsteKwartaal": 11,
+    "keuzes": [
+      {
+        "label": "Garage erbij laten bouwen",
+        "uitleg": "Duur, maar de ondernemers zijn er tevreden mee. De garage staat er pas na drie kwartalen.",
+        "kosten": 4,
+        "effecten": [
+          { "target": "wijken.pleinzuid.garageplekken", "op": "add", "value": 300, "durationQuarters": null, "delayQuarters": 3 },
+          { "target": "persona.ondernemer", "op": "add", "value": 5, "durationQuarters": null, "delayQuarters": 3 }
+        ]
+      },
+      {
+        "label": "Alleen een fietsenstalling",
+        "uitleg": "Goedkoop en de fietsers zijn blij. Voor de winkels is het minder aantrekkelijk.",
+        "kosten": 0.4,
+        "effecten": [
+          { "target": "wijken.pleinzuid.fietsplekken", "op": "add", "value": 150, "durationQuarters": null, "delayQuarters": 1 },
+          { "target": "persona.ondernemer", "op": "add", "value": -3, "durationQuarters": 4, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "plaswijk-studentenhuisvesting",
+    "categorie": "groei",
+    "titel": "Studentenhuisvesting in Plaswijk",
+    "tekst": "Er komen driehonderd studentenkamers bij. Die studenten hebben vaak een auto, en de straten zijn al vol.",
+    "wijk": "plaswijk",
+    "vroegsteKwartaal": 7,
+    "keuzes": [
+      {
+        "label": "Deelfietsen bij het complex",
+        "uitleg": "Een beetje geld, maar studenten pakken de fiets sneller dan de auto.",
+        "kosten": 0.3,
+        "effecten": [
+          { "target": "wijken.plaswijk.fietsplekken", "op": "add", "value": 80, "durationQuarters": null, "delayQuarters": 1 }
+        ]
+      },
+      {
+        "label": "Geen extra regels",
+        "uitleg": "Niets doen kost niets. De auto's komen wel gewoon op straat te staan.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "wijken.plaswijk.bewonersAuto", "op": "add", "value": 220, "durationQuarters": null, "delayQuarters": 2 },
+          { "target": "persona.bewoner", "op": "add", "value": -3, "durationQuarters": 4, "delayQuarters": 2 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "merwehaven-tweede-toren",
+    "categorie": "groei",
+    "titel": "Tweede toren aan de Merwehaven",
+    "tekst": "De tweede toren is klaar voor de bouw. Het wordt een vol gebied, dus de vraag moet je serieus nemen.",
+    "wijk": "havenkwartier",
+    "vroegsteKwartaal": 16,
+    "keuzes": [
+      {
+        "label": "Deelhub erbij bouwen",
+        "uitleg": "Een hub met deelauto's en -fietsen. Het autobezit daalt, maar het kost wel geld.",
+        "kosten": 0.3,
+        "effecten": [
+          { "target": "wijken.havenkwartier.bewonersAuto", "op": "mul", "value": 0.9, "durationQuarters": null, "delayQuarters": 1 }
+        ]
+      },
+      {
+        "label": "Niets extra regelen",
+        "uitleg": "Geen geld nodig, maar de straten lopen vol met auto's die niemand wilde.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "wijken.havenkwartier.bewonersAuto", "op": "add", "value": 300, "durationQuarters": null, "delayQuarters": 1 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ommeland-nieuwe-wijk",
+    "categorie": "groei",
+    "titel": "Nieuwe wijk aan de rand",
+    "tekst": "Aan de rand van Ommeland komen zeshonderd woningen en een metrostation. Iedereen wil een P+R, niemand wil de kosten dragen.",
+    "wijk": "rand",
+    "vroegsteKwartaal": 14,
+    "keuzes": [
+      {
+        "label": "P+R meebouwen",
+        "uitleg": "Vier miljoen voor vijfhonderd plekken. Het centrum wordt er rustiger van.",
+        "kosten": 4,
+        "effecten": [
+          { "target": "wijken.rand.prPlekken", "op": "add", "value": 500, "durationQuarters": null, "delayQuarters": 3 },
+          { "target": "wijken.centrum.bezoekers", "op": "mul", "value": 0.92, "durationQuarters": null, "delayQuarters": 3 }
+        ]
+      },
+      {
+        "label": "Alleen woningen, geen P+R",
+        "uitleg": "Goedkoop nu. De auto's komen in de wijk zelf te staan en de stad is minder blij.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "wijken.rand.bewonersAuto", "op": "add", "value": 400, "durationQuarters": null, "delayQuarters": 2 },
+          { "target": "persona.stad", "op": "add", "value": -2, "durationQuarters": 6, "delayQuarters": 2 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "betaalsysteem-plat",
+    "categorie": "storing",
+    "titel": "Betaalsysteem ligt er plat",
+    "tekst": "Het betaalsysteem ligt er sinds vanochtend uit. Automaten geven geen kaartjes, en de bezoekers balen.",
+    "wijk": null,
+    "vroegsteKwartaal": 3,
+    "keuzes": [
+      {
+        "label": "Noodbetaling via de app",
+        "uitleg": "Mensen betalen via de app. Dat kost een paar centen en helpt de app ook een beetje.",
+        "kosten": 0.05,
+        "effecten": [
+          { "target": "appAandeel", "op": "add", "value": 5, "durationQuarters": 2, "delayQuarters": 0 },
+          { "target": "persona.bezoeker", "op": "add", "value": 2, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Wachten op de leverancier",
+        "uitleg": "Niets extra's uitgeven, maar de omzet loopt twee kwartalen achter en de ondernemers klagen.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "persona.bezoeker", "op": "add", "value": -5, "durationQuarters": 2, "delayQuarters": 0 },
+          { "target": "persona.ondernemer", "op": "add", "value": -4, "durationQuarters": 2, "delayQuarters": 0 },
+          { "target": "fonds", "op": "add", "value": -0.3, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "liftstoring-centrumgarage",
+    "categorie": "storing",
+    "titel": "Liftstoring in de centrumgarage",
+    "tekst": "De lift in de garage aan de Binnenstad staat weer stil. Een mevrouw met een kinderwagen staat op de trap te puffen.",
+    "wijk": "centrum",
+    "vroegsteKwartaal": 4,
+    "keuzes": [
+      {
+        "label": "Liftonderhoud direct laten doen",
+        "uitleg": "Het kost wat, maar de lift blijft het langer doen. Dat scheelt storingen later.",
+        "kosten": 0.15,
+        "effecten": [
+          { "target": "storingsKans", "op": "mul", "value": 0.8, "durationQuarters": 6, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Lift laten staan tot onderhoud",
+        "uitleg": "Het budget blijft heel. Maar de bezoekers mijden de garage en de bezetting in de rest van de wijk loopt op.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "persona.bezoeker", "op": "add", "value": -4, "durationQuarters": 2, "delayQuarters": 0 },
+          { "target": "wijken.centrum.garageplekken", "op": "mul", "value": 0.8, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "lekkage-stortbui-noord",
+    "categorie": "storing",
+    "titel": "Lekkage na een stortbui",
+    "tekst": "Na een flinke stortbui lekt de garage in Bergkade op een paar plekken. Het water staat tot aan de enkels.",
+    "wijk": "noord",
+    "vroegsteKwartaal": 8,
+    "keuzes": [
+      {
+        "label": "Noodreparatie direct",
+        "uitleg": "Dure klus, maar de garage blijft open en de achterstand loopt niet op.",
+        "kosten": 0.8,
+        "effecten": [
+          { "target": "persona.bewoner", "op": "add", "value": 1, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Uitstellen tot na de zomer",
+        "uitleg": "Geen geld nu, maar het onderhoud blijft liggen en de wethouder vraagt er later naar.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "wijken.noord.achterstand", "op": "add", "value": 2, "durationQuarters": null, "delayQuarters": 1 },
+          { "target": "persona.wethouder", "op": "add", "value": -3, "durationQuarters": 2, "delayQuarters": 2 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "onweer-automaten",
+    "categorie": "storing",
+    "titel": "Onweer zet automaten uit",
+    "tekst": "Na het onweer doen de helft van de automaten het niet meer. Het is weer één van die weken.",
+    "wijk": null,
+    "vroegsteKwartaal": 12,
+    "keuzes": [
+      {
+        "label": "Storingen op afstand bewaken",
+        "uitleg": "Een sensorpakket dat storingen meteen meldt. Kost wat, maar de automaten staan minder lang stil.",
+        "kosten": 0.1,
+        "effecten": [
+          { "target": "storingsKans", "op": "mul", "value": 0.5, "durationQuarters": 4, "delayQuarters": 1 }
+        ]
+      },
+      {
+        "label": "Wachten tot de monteur komt",
+        "uitleg": "Geen extra uitgaven. Maar het duurt even en de bezoekers balen.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "storingsKans", "op": "add", "value": 0.03, "durationQuarters": 3, "delayQuarters": 0 },
+          { "target": "persona.bezoeker", "op": "add", "value": -3, "durationQuarters": 3, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "kuipwijk-garage-storm",
+    "categorie": "storing",
+    "titel": "Storm beschadigt garagedeuren",
+    "tekst": "Bij de storm zijn de garagedeuren in Kuipwijk uit hun rails gewaaid. Je moet nu iets doen, anders wordt het een puinhoop.",
+    "wijk": "kuipwijk",
+    "vroegsteKwartaal": 10,
+    "keuzes": [
+      {
+        "label": "Deuren direct herstellen",
+        "uitleg": "Kost 0,2 M€, maar de garage blijft open en de wethouder is tevreden.",
+        "kosten": 0.2,
+        "effecten": [
+          { "target": "persona.wethouder", "op": "add", "value": 2, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Later repareren",
+        "uitleg": "De helft van de plekken dicht tot de klus klaar is. Het onderhoud raakt bovendien verder achter.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "wijken.kuipwijk.garageplekken", "op": "mul", "value": 0.5, "durationQuarters": 1, "delayQuarters": 0 },
+          { "target": "wijken.kuipwijk.achterstand", "op": "add", "value": 3, "durationQuarters": null, "delayQuarters": 1 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "stallingen-vuil-oud-west",
+    "categorie": "storing",
+    "titel": "Vuile stallingen na het weekend",
+    "tekst": "Maandagochtend liggen de stallingen in Oud-West vol troep. De buren hebben al gebeld.",
+    "wijk": "oudwest",
+    "vroegsteKwartaal": 15,
+    "keuzes": [
+      {
+        "label": "Extra schoonmaakronde",
+        "uitleg": "Een ronde in het weekend. Het kost een paar centen, maar de buurt ziet het meteen.",
+        "kosten": 0.06,
+        "effecten": [
+          { "target": "wijken.oudwest.netheid", "op": "add", "value": 10, "durationQuarters": 3, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Schoonmaak op de planning laten",
+        "uitleg": "Geen extra geld. Het blijft wel even liggen en de stad merkt het.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "wijken.oudwest.netheid", "op": "add", "value": -6, "durationQuarters": 2, "delayQuarters": 0 },
+          { "target": "persona.stad", "op": "add", "value": -3, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "wedstrijddag-kuipwijk",
+    "categorie": "evenement",
+    "titel": "Wedstrijddag in Kuipwijk",
+    "tekst": "Er is vanavond een grote wedstrijd in het stadion. Het hele zuiden van de stad wil tegelijk parkeren.",
+    "wijk": "kuipwijk",
+    "vroegsteKwartaal": 4,
+    "keuzes": [
+      {
+        "label": "Tijdelijke extra plekken",
+        "uitleg": "Weides en gravel worden tijdelijk parkeerterrein. Het kost geld, maar de zoektijd blijft laag.",
+        "kosten": 0.25,
+        "effecten": [
+          { "target": "wijken.kuipwijk.straatplekken", "op": "add", "value": 300, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Gewoon doorwerken",
+        "uitleg": "Geen extra kosten en de kassa rinkelt. Maar de zoektijd loopt op en de bezoekers balen.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "persona.bezoeker", "op": "add", "value": -4, "durationQuarters": 1, "delayQuarters": 0 },
+          { "target": "fonds", "op": "add", "value": 0.4, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "marathon-wegafsluitingen",
+    "categorie": "evenement",
+    "titel": "Marathon met wegafsluitingen",
+    "tekst": "Zondag loopt de marathon door de Binnenstad. Half centrum is dicht, en de ondernemers willen dat je iets doet.",
+    "wijk": "centrum",
+    "vroegsteKwartaal": 10,
+    "keuzes": [
+      {
+        "label": "Garages open, route blijft",
+        "uitleg": "De garages blijven open via omleidingen. Dat kost wat extra personeel, maar de winkels houden hun klanten.",
+        "kosten": 0.05,
+        "effecten": [
+          { "target": "persona.ondernemer", "op": "add", "value": -3, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Afsluiten en omleiden",
+        "uitleg": "Zo goedkoop mogelijk. De bezoekers blijven weg en de winkels klagen.",
+        "kosten": 0.02,
+        "effecten": [
+          { "target": "wijken.centrum.bezoekers", "op": "mul", "value": 0.85, "durationQuarters": 1, "delayQuarters": 0 },
+          { "target": "persona.ondernemer", "op": "add", "value": -6, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "havenfestival-merwehaven",
+    "categorie": "evenement",
+    "titel": "Havenfestival op de Merwehaven",
+    "tekst": "Het havenfestival trekt vierduizend mensen naar het kale terrein. Alle auto's willen op een half leeg veld.",
+    "wijk": "havenkwartier",
+    "vroegsteKwartaal": 6,
+    "keuzes": [
+      {
+        "label": "Pop-up plekken op het terrein",
+        "uitleg": "Plekken op het terrein zelf, met een hek eromheen. Net genoeg voor het weekend.",
+        "kosten": 0.1,
+        "effecten": [
+          { "target": "wijken.havenkwartier.straatplekken", "op": "add", "value": 120, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Tarief verhogen tijdens festival",
+        "uitleg": "Geld binnen, maar de bezoekers baggeren er niet blij van weg.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "fonds", "op": "add", "value": 0.5, "durationQuarters": 1, "delayQuarters": 0 },
+          { "target": "persona.bezoeker", "op": "add", "value": -2, "durationQuarters": 1, "delayQuarters": 0 },
+          { "target": "persona.ondernemer", "op": "add", "value": -4, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "zomercarnaval-pleinzuid",
+    "categorie": "evenement",
+    "titel": "Zomercarnaval rond het plein",
+    "tekst": "Het zomercarnaval trekt door Pleinzuid. Er staan fietsen op elke stoep, en de straat is één groot feest.",
+    "wijk": "pleinzuid",
+    "vroegsteKwartaal": 12,
+    "keuzes": [
+      {
+        "label": "Tijdelijke fietsenstalling",
+        "uitleg": "Een stalling van een paar dagen. Dat kost een beetje, maar het plein blijft schoon.",
+        "kosten": 0.08,
+        "effecten": [
+          { "target": "wijken.pleinzuid.fietsplekken", "op": "add", "value": 200, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Laten doorlopen",
+        "uitleg": "Gratis, en de feestgangers zijn blij. De fietsen staan wel op de stoep en de buurt klaagt.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "wijken.pleinzuid.fietsvraag", "op": "add", "value": 300, "durationQuarters": 1, "delayQuarters": 0 },
+          { "target": "persona.stad", "op": "add", "value": -2, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "concert-op-het-plein",
+    "categorie": "evenement",
+    "titel": "Concert op het centrale plein",
+    "tekst": "Een grote zomeravond met een concert op het plein in de Binnenstad. Hele bussen vol mensen die moeten parkeren.",
+    "wijk": "centrum",
+    "vroegsteKwartaal": 18,
+    "keuzes": [
+      {
+        "label": "Extra handhaving rond het plein",
+        "uitleg": "Handhavers op de been. Het kost een paar centen, maar de foute parkeerders verdwijnen.",
+        "kosten": 0.1,
+        "effecten": [
+          { "target": "naleving", "op": "add", "value": 0.05, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Alles laten gebeuren",
+        "uitleg": "Geen kosten. De straten staan vol en de ondernemers weten niet waar ze heen moeten.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "wijken.centrum.bezoekers", "op": "mul", "value": 1.1, "durationQuarters": 1, "delayQuarters": 0 },
+          { "target": "persona.stad", "op": "add", "value": -2, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "festivalweekend-binnenstad",
+    "categorie": "evenement",
+    "titel": "Festivalweekend in de Binnenstad",
+    "tekst": "Drie dagen festival in de Binnenstad. Iedereen vraagt zich af of het tarief omhoog moet of dat het gratis mag.",
+    "wijk": "centrum",
+    "vroegsteKwartaal": 22,
+    "keuzes": [
+      {
+        "label": "Dynamisch tarief dit weekend",
+        "uitleg": "Het tarief gaat omhoog tijdens het festival. Je verdient er goed aan, maar de bezoekers mijden de wijk.",
+        "kosten": 0.05,
+        "effecten": [
+          { "target": "wijken.centrum.tariefFactor", "op": "mul", "value": 1.25, "durationQuarters": 1, "delayQuarters": 0 },
+          { "target": "fonds", "op": "add", "value": 0.6, "durationQuarters": 1, "delayQuarters": 0 },
+          { "target": "persona.bezoeker", "op": "add", "value": -3, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Weekend gratis parkeren",
+        "uitleg": "Heel populair bij de bezoekers en de ondernemers. Het kost je wel een flinke klap in het fonds.",
+        "kosten": 0.3,
+        "effecten": [
+          { "target": "fonds", "op": "add", "value": -0.6, "durationQuarters": 1, "delayQuarters": 0 },
+          { "target": "persona.bezoeker", "op": "add", "value": 4, "durationQuarters": 1, "delayQuarters": 0 },
+          { "target": "persona.ondernemer", "op": "add", "value": 5, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "motie-gratis-parkeren-ondernemers",
+    "categorie": "politiek",
+    "titel": "Motie: gratis parkeren voor ondernemers",
+    "tekst": "De gemeenteraad wil dat ondernemers twee kwartalen gratis mogen parkeren. Het is een populair voorstel, maar het kost geld.",
+    "wijk": "centrum",
+    "vroegsteKwartaal": 6,
+    "keuzes": [
+      {
+        "label": "Motie uitvoeren",
+        "uitleg": "Twee kwartalen gratis parkeren. De ondernemers zijn blij, maar het fonds loopt leeg.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "fonds", "op": "add", "value": -0.8, "durationQuarters": 2, "delayQuarters": 0 },
+          { "target": "persona.ondernemer", "op": "add", "value": 8, "durationQuarters": 2, "delayQuarters": 0 },
+          { "target": "persona.wethouder", "op": "add", "value": 3, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Motie naast zich neerleggen",
+        "uitleg": "Het fonds blijft gevuld. De ondernemers vinden het geen fijn nieuws.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "persona.ondernemer", "op": "add", "value": -5, "durationQuarters": 2, "delayQuarters": 0 },
+          { "target": "persona.wethouder", "op": "add", "value": -3, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bezuinigingsronde",
+    "categorie": "politiek",
+    "titel": "Bezuinigingsronde op de begroting",
+    "tekst": "Het college moet bezuinigen. Iedereen wijst naar iedereen, en jij moet een voorstel doen.",
+    "wijk": null,
+    "vroegsteKwartaal": 13,
+    "keuzes": [
+      {
+        "label": "Schoonmaakbudget schrappen",
+        "uitleg": "Een schoonmaker minder en wat geld erbij. Maar de netheid zakt na een paar kwartalen.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "personeel.schoonmaker", "op": "add", "value": -1, "durationQuarters": null, "delayQuarters": 0 },
+          { "target": "fonds", "op": "add", "value": 1, "durationQuarters": null, "delayQuarters": 0 },
+          { "target": "netheid", "op": "add", "value": -5, "durationQuarters": null, "delayQuarters": 2 }
+        ]
+      },
+      {
+        "label": "Kleine snijwerk verdelen",
+        "uitleg": "Iedereen een beetje minder. Het fonds krijgt er iets bij, maar de bewoners zijn een beetje chagrijnig.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "fonds", "op": "add", "value": 0.6, "durationQuarters": null, "delayQuarters": 0 },
+          { "target": "persona.wethouder", "op": "add", "value": 2, "durationQuarters": 2, "delayQuarters": 0 },
+          { "target": "persona.bewoner", "op": "add", "value": -2, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "raadsvraag-zoektijd-binnenstad",
+    "categorie": "politiek",
+    "titel": "Raadsvraag over zoektijd Binnenstad",
+    "tekst": "Een raadslid wil weten waarom mensen in de Binnenstad drie kwartier zoeken naar een plek. Je moet antwoord geven.",
+    "wijk": "centrum",
+    "vroegsteKwartaal": 9,
+    "keuzes": [
+      {
+        "label": "Uitgebreid antwoord met cijfers",
+        "uitleg": "Je stuurt een goed onderbouwd antwoord. Het kost wat tijd, en de wethouder is er blij mee.",
+        "kosten": 0.02,
+        "effecten": [
+          { "target": "persona.wethouder", "op": "add", "value": 4, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Kort antwoord sturen",
+        "uitleg": "Snel klaar, geen kosten. Het raadslid is er niet tevreden mee en blijft erover doorvragen.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "persona.wethouder", "op": "add", "value": -3, "durationQuarters": 2, "delayQuarters": 0 },
+          { "target": "persona.ondernemer", "op": "add", "value": -2, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "raad-wil-meer-fietsenstallingen",
+    "categorie": "politiek",
+    "titel": "Raad wil meer fietsenstallingen",
+    "tekst": "De raad wil in Oud-West meer fietsplekken. Nietjes zijn goedkoop, een bewaakte stalling is duur.",
+    "wijk": "oudwest",
+    "vroegsteKwartaal": 11,
+    "keuzes": [
+      {
+        "label": "Nietjes plaatsen",
+        "uitleg": "Snel en goedkoop. Het zijn er honderd, en alleen buiten.",
+        "kosten": 0.05,
+        "effecten": [
+          { "target": "wijken.oudwest.fietsplekken", "op": "add", "value": 100, "durationQuarters": null, "delayQuarters": 0 },
+          { "target": "persona.fietser", "op": "add", "value": 4, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Bewaakte stalling bouwen",
+        "uitleg": "Drie miljoen en duizend plekken. Het duurt drie kwartalen, maar de fietsers zijn dan klaar.",
+        "kosten": 3,
+        "effecten": [
+          { "target": "wijken.oudwest.fietsplekken", "op": "add", "value": 1000, "durationQuarters": null, "delayQuarters": 3 },
+          { "target": "persona.fietser", "op": "add", "value": 6, "durationQuarters": null, "delayQuarters": 3 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "proef-betaald-parkeren-noord",
+    "categorie": "politiek",
+    "titel": "Proef met betaald parkeren in Noord",
+    "tekst": "De wethouder wil een proef met betaald parkeren in Bergkade. De bewoners zijn al bang dat het hun eigen straat wordt.",
+    "wijk": "noord",
+    "vroegsteKwartaal": 15,
+    "keuzes": [
+      {
+        "label": "Proef starten",
+        "uitleg": "Betaald parkeren in de wijk. Er komen inkomsten, maar de bewoners zijn boos.",
+        "kosten": 0.3,
+        "effecten": [
+          { "target": "wijken.noord.tariefFactor", "op": "set", "value": 1, "durationQuarters": null, "delayQuarters": 0 },
+          { "target": "fonds", "op": "add", "value": 0.2, "durationQuarters": null, "delayQuarters": 2 },
+          { "target": "persona.bewoner", "op": "add", "value": -6, "durationQuarters": 3, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Proef uitstellen",
+        "uitleg": "Rust in de wijk, maar de wethouder vindt het traag gaan.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "persona.wethouder", "op": "add", "value": -4, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "motie-ruimere-vergunningen-oud-west",
+    "categorie": "politiek",
+    "titel": "Bewoners willen ruimere vergunningen",
+    "tekst": "De vergunningen in Oud-West zitten vol. De bewoners willen dat je het plafond ophoogt, en de raad is het met ze eens.",
+    "wijk": "oudwest",
+    "vroegsteKwartaal": 19,
+    "keuzes": [
+      {
+        "label": "Ruimere vergunningen geven",
+        "uitleg": "Meer vergunningen, de bewoners zijn blij. De straten worden wel voller.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "wijken.oudwest.vergunningFactor", "op": "mul", "value": 1.15, "durationQuarters": null, "delayQuarters": 0 },
+          { "target": "persona.bewoner", "op": "add", "value": 7, "durationQuarters": 2, "delayQuarters": 0 },
+          { "target": "wijken.oudwest.bewonersAuto", "op": "add", "value": 80, "durationQuarters": null, "delayQuarters": 3 }
+        ]
+      },
+      {
+        "label": "Krap plafond houden",
+        "uitleg": "De regels blijven. De bewoners zijn teleurgesteld, maar de straten blijven overzichtelijk.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "persona.bewoner", "op": "add", "value": -6, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "griepgolf-team",
+    "categorie": "personeel",
+    "titel": "Griepgolf in het team",
+    "tekst": "Half het team ligt ziek thuis. De koffieautomaat is het enige wat nog draait.",
+    "wijk": null,
+    "vroegsteKwartaal": 8,
+    "keuzes": [
+      {
+        "label": "Overwerk laten draaien",
+        "uitleg": "Gratis, maar de mensen die er zijn raken uitgeput. Storingen nemen toe.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "storingsKans", "op": "add", "value": 0.01, "durationQuarters": 2, "delayQuarters": 0 },
+          { "target": "personeel.tevredenheid", "op": "add", "value": -6, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Tijdelijke inhuur",
+        "uitleg": "Een uitzendkracht voor een paar maanden. Duur, maar het team blijft heel.",
+        "kosten": 0.2,
+        "effecten": [
+          { "target": "personeel.tevredenheid", "op": "add", "value": 3, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vacatures-monteurs-open",
+    "categorie": "personeel",
+    "titel": "Vacatures voor monteurs blijven open",
+    "tekst": "Drie vacatures voor monteurs staan al maanden open. Niemand reageert, en de automaten wachten.",
+    "wijk": null,
+    "vroegsteKwartaal": 10,
+    "keuzes": [
+      {
+        "label": "Werving via uitzendbureau",
+        "uitleg": "Een bureau zoekt mensen voor je. Het kost geld, en de nieuwe monteur komt pas over twee kwartalen.",
+        "kosten": 0.15,
+        "effecten": [
+          { "target": "personeel.monteur", "op": "add", "value": 1, "durationQuarters": null, "delayQuarters": 2 }
+        ]
+      },
+      {
+        "label": "Wachten op sollicitanten",
+        "uitleg": "Geen kosten, maar de storingen nemen toe tot er iemand komt.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "storingsKans", "op": "add", "value": 0.01, "durationQuarters": 4, "delayQuarters": 1 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ervaren-monteur-pensioen",
+    "categorie": "personeel",
+    "titel": "Ervaren monteur gaat met pensioen",
+    "tekst": "De monteur die alle liften kent, gaat met pensioen. Hij heeft de sleutels op tafel gelegd en een bos bloemen gekregen.",
+    "wijk": null,
+    "vroegsteKwartaal": 14,
+    "keuzes": [
+      {
+        "label": "Kennis overdragen via opleiding",
+        "uitleg": "Een jonge monteur krijgt een cursus van de oude rot. Kost geld, maar het blijft in het huis.",
+        "kosten": 0.15,
+        "effecten": [
+          { "target": "storingsKans", "op": "add", "value": 0.005, "durationQuarters": 4, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Niet vervangen",
+        "uitleg": "Geen geld nu. Op termijn gaan de automaten vaker stil en de liften blijven langer kapot.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "personeel.monteur", "op": "add", "value": -1, "durationQuarters": null, "delayQuarters": 0 },
+          { "target": "storingsKans", "op": "add", "value": 0.02, "durationQuarters": null, "delayQuarters": 2 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "klantcontact-overloop",
+    "categorie": "personeel",
+    "titel": "Klantcontact loopt over",
+    "tekst": "De telefoon staat roodgloeiend. Bezwaren stapelen zich op en de mailbox loopt over.",
+    "wijk": null,
+    "vroegsteKwartaal": 17,
+    "keuzes": [
+      {
+        "label": "Extra klantcontactmedewerker",
+        "uitleg": "Een extra persoon aan de lijn. Dat kost een schijntje, en de wachtrij wordt korter.",
+        "kosten": 0.11,
+        "effecten": [
+          { "target": "personeel.klantcontact", "op": "add", "value": 1, "durationQuarters": null, "delayQuarters": 2 }
+        ]
+      },
+      {
+        "label": "Achterstand laten oplopen",
+        "uitleg": "Geen kosten, maar bewoners en wethouder raken gefrustreerd.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "persona.wethouder", "op": "add", "value": -4, "durationQuarters": 3, "delayQuarters": 1 },
+          { "target": "persona.bewoner", "op": "add", "value": -4, "durationQuarters": 3, "delayQuarters": 1 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "handhaver-stopt",
+    "categorie": "personeel",
+    "titel": "Handhaver stopt met direct ingang",
+    "tekst": "Een handhaver zegt op, net nu de scanauto's het drukst zijn. Het rooster loopt leeg.",
+    "wijk": null,
+    "vroegsteKwartaal": 21,
+    "keuzes": [
+      {
+        "label": "Direct vervangen",
+        "uitleg": "Vacature en een nieuwe handhaver. Duur, maar de scanauto blijft rijden.",
+        "kosten": 0.06,
+        "effecten": [
+          { "target": "personeel.handhaver", "op": "add", "value": 1, "durationQuarters": null, "delayQuarters": 2 }
+        ]
+      },
+      {
+        "label": "Rooster laten lopen",
+        "uitleg": "Geen geld nodig. De naleving zakt tot de vervanging er is.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "naleving", "op": "mul", "value": 0.9, "durationQuarters": 3, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "werkdruk-team",
+    "categorie": "personeel",
+    "titel": "Team voelt de werkdruk",
+    "tekst": "De stemming in het team is om te snijden. Iemand zegt het hardop in de koffiehoek.",
+    "wijk": null,
+    "vroegsteKwartaal": 24,
+    "keuzes": [
+      {
+        "label": "Extra vrije dag en teamdag",
+        "uitleg": "Een dag weg van het werk. Het kost een paar centen, maar de sfeer komt terug.",
+        "kosten": 0.1,
+        "effecten": [
+          { "target": "personeel.tevredenheid", "op": "add", "value": 10, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Gewoon doorgaan",
+        "uitleg": "Geen geld, geen gedoe. De tevredenheid blijft liggen en vertrekkers melden zich.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "personeel.tevredenheid", "op": "add", "value": -8, "durationQuarters": 4, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "app-parkeren-verdubbelt",
+    "categorie": "markt",
+    "titel": "App-parkeren verdubbelt",
+    "tekst": "Bijna iedereen parkeert nu via de app. De automaten staan er nog, maar niemand gebruikt ze meer.",
+    "wijk": null,
+    "vroegsteKwartaal": 7,
+    "keuzes": [
+      {
+        "label": "Inzetten op de app",
+        "uitleg": "Een goede app met korting. Het kost wat, maar de app-parkeerders blijven terugkomen.",
+        "kosten": 0.1,
+        "effecten": [
+          { "target": "appAandeel", "op": "add", "value": 10, "durationQuarters": null, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Automaten behouden",
+        "uitleg": "Geen extra geld. De automaten blijven bij de contant-betalers, maar die worden minder.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "fonds", "op": "add", "value": 0.3, "durationQuarters": 4, "delayQuarters": 0 },
+          { "target": "persona.bezoeker", "op": "add", "value": -2, "durationQuarters": 4, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "laadpalen-vraag-centrum",
+    "categorie": "markt",
+    "titel": "Elektrische auto's vragen laadplekken",
+    "tekst": "Iedereen met een elektrische auto staat in de Binnenstad te zoeken naar een laadpaal. De vraag groeit elk kwartaal.",
+    "wijk": "centrum",
+    "vroegsteKwartaal": 13,
+    "keuzes": [
+      {
+        "label": "Laadpalen op straat plaatsen",
+        "uitleg": "Laadpalen op straatplekken. Kost geld en plekken, maar de bewoners zijn tevreden.",
+        "kosten": 0.35,
+        "effecten": [
+          { "target": "wijken.centrum.straatplekken", "op": "add", "value": -12, "durationQuarters": null, "delayQuarters": 0 },
+          { "target": "persona.bewoner", "op": "add", "value": 4, "durationQuarters": null, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Wachten op landelijke regeling",
+        "uitleg": "Niets doen en wachten tot Den Haag geld geeft. De bezoekers vertrekken naar elders.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "persona.bezoeker", "op": "add", "value": -3, "durationQuarters": 3, "delayQuarters": 0 },
+          { "target": "persona.stad", "op": "add", "value": -2, "durationQuarters": 3, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "laadpalen-vraag-oud-west",
+    "categorie": "markt",
+    "titel": "Laadpunten voor Oud-West",
+    "tekst": "De bewoners in Oud-West willen laden, maar er is geen plek voor een kabel. De garages zijn vol.",
+    "wijk": "oudwest",
+    "vroegsteKwartaal": 18,
+    "keuzes": [
+      {
+        "label": "Laadpunten in de garage",
+        "uitleg": "Een paar plekken in de garage. Dat kost, maar het bespaart straatplekken.",
+        "kosten": 0.2,
+        "effecten": [
+          { "target": "wijken.oudwest.garageplekken", "op": "add", "value": -8, "durationQuarters": null, "delayQuarters": 0 },
+          { "target": "persona.bewoner", "op": "add", "value": 4, "durationQuarters": null, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Laten lopen",
+        "uitleg": "Geen geld, geen gedoe. De bewoners met een elektrische auto klagen en stemmen anders.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "persona.bewoner", "op": "add", "value": -3, "durationQuarters": 4, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "deelhub-noord",
+    "categorie": "markt",
+    "titel": "Deelauto-aanbieder wil ruimte",
+    "tekst": "Een deelauto-aanbieder vraagt of hij in Bergkade een hub mag neerzetten. De bewoners zijn verdeeld.",
+    "wijk": "noord",
+    "vroegsteKwartaal": 20,
+    "keuzes": [
+      {
+        "label": "Deelhub toestaan",
+        "uitleg": "Een hub van tien auto's. Kost wat, en het autobezit in de wijk zakt een beetje.",
+        "kosten": 0.3,
+        "effecten": [
+          { "target": "wijken.noord.bewonersAuto", "op": "mul", "value": 0.9, "durationQuarters": null, "delayQuarters": 1 }
+        ]
+      },
+      {
+        "label": "Afwijzen, auto's blijven",
+        "uitleg": "Geen geld en geen gedoe. De wijk blijft vol met eigen auto's en de fietsers balen.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "wijken.noord.bewonersAuto", "op": "add", "value": 60, "durationQuarters": null, "delayQuarters": 1 },
+          { "target": "persona.fietser", "op": "add", "value": -2, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bezorgdiensten-centrum",
+    "categorie": "markt",
+    "titel": "Bezorgbusjes nemen de straat in",
+    "tekst": "Bezorgdiensten parkeren op de stoep en in de bushalte. De ondernemers vragen om een laad- en losplek.",
+    "wijk": "centrum",
+    "vroegsteKwartaal": 23,
+    "keuzes": [
+      {
+        "label": "Laad- en losplekken inrichten",
+        "uitleg": "Een paar plekken voor bezorgers. Kost een beetje en er gaan wat gewone plekken af.",
+        "kosten": 0.12,
+        "effecten": [
+          { "target": "wijken.centrum.straatplekken", "op": "add", "value": -6, "durationQuarters": null, "delayQuarters": 0 },
+          { "target": "persona.ondernemer", "op": "add", "value": 4, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Laten gebeuren",
+        "uitleg": "Geen kosten. De ondernemers zijn boos en de straat blijft een rommeltje.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "persona.ondernemer", "op": "add", "value": -3, "durationQuarters": 2, "delayQuarters": 0 },
+          { "target": "persona.stad", "op": "add", "value": -2, "durationQuarters": 3, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "taxizone-kopbrug",
+    "categorie": "markt",
+    "titel": "Taxi's willen een eigen zone",
+    "tekst": "Taxichauffeurs willen een wachtzone bij de brug. Die plekken zie jij liever als parkeerplekken.",
+    "wijk": "kopbrug",
+    "vroegsteKwartaal": 27,
+    "keuzes": [
+      {
+        "label": "Taxizone aanwijzen",
+        "uitleg": "Een paar plekken voor taxi's. Dat kost vier ton aan bebording, maar de bezoekers komen makkelijker weg.",
+        "kosten": 0.04,
+        "effecten": [
+          { "target": "wijken.kopbrug.straatplekken", "op": "add", "value": -4, "durationQuarters": null, "delayQuarters": 0 },
+          { "target": "persona.bezoeker", "op": "add", "value": 2, "durationQuarters": null, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Zoeken naar gedoogplekken",
+        "uitleg": "Geen geld, wel gedoe. De taxi's staan op de stoep en de bezoekers balen.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "persona.bezoeker", "op": "add", "value": -3, "durationQuarters": 2, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "kabouter-verkleed",
+    "categorie": "easteregg",
+    "titel": "De kabouter is weer verkleed",
+    "tekst": "Iemand heeft de kabouter bij het plein weer verkleed.",
+    "wijk": null,
+    "vroegsteKwartaal": 1,
+    "keuzes": [
+      {
+        "label": "Laten staan, het is grappig",
+        "uitleg": "De kabouter blijft zitten zoals hij zit. De stad glimlacht, en niemand klaagt.",
+        "kosten": 0,
+        "effecten": [
+          { "target": "persona.stad", "op": "add", "value": 1, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      },
+      {
+        "label": "Laten weghalen",
+        "uitleg": "De kabouter gaat naar de opslag. Het kost een klein bedrag, en de bewoners balen.",
+        "kosten": 0.03,
+        "effecten": [
+          { "target": "persona.bewoner", "op": "add", "value": -1, "durationQuarters": 1, "delayQuarters": 0 }
+        ]
+      }
+    ]
+  }
+]

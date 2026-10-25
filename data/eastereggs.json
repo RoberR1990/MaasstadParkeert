@@ -1,0 +1,96 @@
+{
+  "eastereggs": [
+    {
+      "id": "de-zwaan",
+      "badge": "De Zwaan",
+      "trigger": { "type": "click", "target": "witte tuibrug", "count": 5, "condition": null },
+      "effect": "Brug-sprite klapt de vleugels uit en vliegt een korte rondje over de rivier.",
+      "tekst": null
+    },
+    {
+      "id": "de-hef",
+      "badge": "De Hef",
+      "trigger": { "type": "click", "target": "oude spoorhefbrug", "count": 3, "condition": null },
+      "effect": "Middendeel van de hefbrug gaat omhoog; een boot-sprite vaart eronder door.",
+      "tekst": null
+    },
+    {
+      "id": "netnummer",
+      "badge": "Netnummer",
+      "trigger": { "type": "keys", "target": "010", "count": null, "condition": null },
+      "effect": "Retro-modus: alles in rood-wit-groen pixelstijl, 30 seconden.",
+      "tekst": null
+    },
+    {
+      "id": "zuinig-als-een-rotterdammer",
+      "badge": "Zuinig als een Rotterdammer",
+      "trigger": { "type": "condition", "target": "fonds", "count": null, "condition": "Fondssaldo op het eindscherm (kwartaal 40) is groter dan 0 en kleiner dan 10 k€" },
+      "effect": "Eindscherm toont de extra regel en kent de badge toe.",
+      "tekst": "Geen woorden maar daden."
+    },
+    {
+      "id": "hand-in-hand",
+      "badge": "Hand in hand",
+      "trigger": { "type": "condition", "target": "gebeurtenis wedstrijddag-kuipwijk", "count": null, "condition": "Wedstrijddag-kaart in Kuipwijk is gespeeld en er is geen zoektijd-piek in die wijk" },
+      "effect": "Vuurwerk-animatie boven het stadion. Alleen de badge-titel, geen extra beloning (te bevestigen, zie open punt).",
+      "tekst": null
+    },
+    {
+      "id": "abseiler",
+      "badge": "Abseiler",
+      "trigger": { "type": "click", "target": "toren met uitkijkbol", "count": 1, "condition": null },
+      "effect": "Figuurtje seint naar beneden aan een touw (korte animatie).",
+      "tekst": null
+    },
+    {
+      "id": "dakpannenweer",
+      "badge": "Dakpannenweer",
+      "trigger": { "type": "condition", "target": "weer", "count": 4, "condition": "Vier seizoenen achter elkaar met regen" },
+      "effect": "Tekstballon verschijnt boven de kaart.",
+      "tekst": "Lekker weertje weer."
+    },
+    {
+      "id": "marktbaas",
+      "badge": "Marktbaas",
+      "trigger": { "type": "click", "target": "hoefijzergebouw met grote binnenhal", "count": 1, "condition": null },
+      "effect": "Eetkraampjes-sprites verschijnen rond het gebouw.",
+      "tekst": null
+    },
+    {
+      "id": "kapsalon",
+      "badge": "Kapsalon",
+      "trigger": { "type": "condition", "target": "bouwopties snackkar", "count": 3, "condition": "Snackkar in een garage zetten; verborgen bouwoptie die pas na 3 gebouwde garages verschijnt" },
+      "effect": "Snackkar-menu toont alleen kapsalon.",
+      "tekst": "Op het menu: alleen kapsalon."
+    },
+    {
+      "id": "scheef-maar-mooi",
+      "badge": "Scheef maar mooi",
+      "trigger": { "type": "click", "target": "kantelende kubuswoningen", "count": 1, "condition": null },
+      "effect": "De kubuswoningen draaien een kwartslag en weer terug.",
+      "tekst": null
+    },
+    {
+      "id": "watertaxi",
+      "badge": "Watertaxi",
+      "trigger": { "type": "condition", "target": "wijken.rand.prPlekken", "count": null, "condition": "P+R gebouwd in Ommeland (rand) en OV-niveau van rand is 3" },
+      "effect": "Watertaxi-sprite vaart over de rivier.",
+      "tekst": null
+    },
+    {
+      "id": "kabouterwacht",
+      "badge": "Kabouterwacht",
+      "trigger": { "type": "random", "target": "gebeurtenis kabouter-verkleed", "count": 1, "condition": "Eenmaal per spel, willekeurig gekozen moment" },
+      "effect": "Voegt de gebeurteniskaart kabouter-verkleed toe aan de wachtrij (max 1 per spel).",
+      "tekst": null
+    }
+  ],
+  "laadschermUitspraken": [
+    "Niet lullen maar poetsen",
+    "Eerst de schop in de grond, dan praten",
+    "Van Zuid tot Noord, alles is ons terrein",
+    "Eerst de meting, dan de maatregel",
+    "De beste plek is die je niet hoeft te zoeken",
+    "Alles werkt, tot het gaat regenen"
+  ]
+}
