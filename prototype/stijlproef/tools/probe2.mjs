@@ -1,0 +1,14 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const { chromium } = require('playwright');
+const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+await p.goto('http://127.0.0.1:4173/?' + (process.argv[2] ?? 'play=1&skiptut=1&pause=1&intro=0'));
+await p.waitForFunction(() => window.__game && window.__game.ready, null, { timeout: 300000 });
+await new Promise((r) => setTimeout(r, 2000));
+let t = Date.now();
+await p.evaluate(() => window.__game.freeze());
+console.log('freeze', Date.now() - t); t = Date.now();
+await p.screenshot({ path: '/tmp/probe.png', timeout: 200000 });
+console.log('shot', Date.now() - t);
+await b.close();

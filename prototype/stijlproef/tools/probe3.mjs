@@ -1,0 +1,12 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const { chromium } = require('playwright');
+const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+p.on('pageerror', (e) => console.log('ERR', e.message));
+await p.goto('http://127.0.0.1:4173/?manual=1&play=1&skiptut=1&pause=1&intro=0&hour=16.5&pressure=80');
+await p.waitForFunction(() => window.__game && window.__game.ready, null, { timeout: 100000 });
+const info = await p.evaluate(() => { const g = window.__game; const f = g.freeLots(); g.select('garage'); const id = f[0].id; g.hoverLot(id); g.advance(1); return { n: f.length, id, scr: g.projectLot(id), f: f.slice(0, 5) }; });
+console.log(JSON.stringify(info));
+await p.screenshot({ path: '/tmp/probe3.png', clip: { x: info.scr.x - 200, y: info.scr.y - 200, width: 400, height: 300 } });
+await b.close();
