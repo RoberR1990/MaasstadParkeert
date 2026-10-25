@@ -60,10 +60,11 @@
   ]
  },
  "finance": {
-  "startFonds": 10000000,
-  "yearBudget": 25000000,
+  "startFonds": 30000000,
+  "reserveCap": 5000000,
+  "yearBudget": 18000000,
   "budgetEvery": 4,
-  "fixedOverheadPerYear": 31000000,
+  "fixedOverheadPerYear": 33000000,
   "wageInflation": 0.015,
   "allowDebtBuild": false,
   "repairCost": {
@@ -145,7 +146,7 @@
   },
   "hireDelay": 2,
   "maxHirePerRolePerQuarter": 3,
-  "attritionPerQuarter": 0.008,
+  "attritionPerQuarter": 0.014,
   "startBuffer": 1.1,
   "moodStart": 70,
   "fireMoodHit": 6,
@@ -224,7 +225,7 @@
   "maintenance": {
    "gain": 1,
    "decay": 0.5,
-   "closeAt": 8,
+   "closeAt": 6,
    "closedCapFactor": 0.5
   },
   "netheidPerRatio": 80,
@@ -242,7 +243,8 @@
   "prTargets": {
    "centrum": 1.0,
    "kopbrug": 0.5
-  }
+  },
+  "netheidSpeed": 0.25
  },
  "score": {
   "weights": {
@@ -307,17 +309,17 @@
    "incident": 0.3,
    "klacht": 0.3
   },
-  "fondsHappy": 10000000,
+  "fondsHappy": 1000000,
   "fondsNegScale": 10000000,
   "incidentPerClosed": 25,
   "incidentPerNew": 10,
   "klantBad": 600,
   "klantPenaltyPer": 0.02,
   "klantPenaltyMax": 25,
-  "introPenaltyBewoner": 8,
-  "introPenaltyWethouder": 6,
-  "negFondsPenaltyPerQuarter": 500,
-  "backlogPenaltyPerPoint": 50,
+  "introPenaltyBewoner": 5,
+  "introPenaltyWethouder": 4,
+  "negFondsPenaltyPerQuarter": 60,
+  "backlogPenaltyPerPoint": 6,
   "scoreScale": 100
  },
  "start": {
@@ -327,7 +329,7 @@
    "centrum": {
     "pop": 9000,
     "carOwn": 0.18,
-    "visitors": 3400,
+    "visitors": 4800,
     "streetSpots": 2600,
     "garages": [
      600,
@@ -349,7 +351,7 @@
    "kopbrug": {
     "pop": 6000,
     "carOwn": 0.24,
-    "visitors": 900,
+    "visitors": 1700,
     "streetSpots": 1500,
     "garages": [
      400
@@ -384,7 +386,7 @@
    },
    "oudwest": {
     "pop": 15000,
-    "carOwn": 0.225,
+    "carOwn": 0.25,
     "visitors": 800,
     "streetSpots": 4200,
     "garages": [],
@@ -400,7 +402,7 @@
    },
    "noord": {
     "pop": 12000,
-    "carOwn": 0.235,
+    "carOwn": 0.27,
     "visitors": 600,
     "streetSpots": 4000,
     "garages": [],
@@ -416,7 +418,7 @@
    },
    "plaswijk": {
     "pop": 11000,
-    "carOwn": 0.4,
+    "carOwn": 0.44,
     "visitors": 500,
     "streetSpots": 6500,
     "garages": [],
@@ -432,8 +434,8 @@
    },
    "pleinzuid": {
     "pop": 8000,
-    "carOwn": 0.35,
-    "visitors": 1900,
+    "carOwn": 0.38,
+    "visitors": 2400,
     "streetSpots": 4500,
     "garages": [
      350
@@ -452,8 +454,8 @@
    },
    "kuipwijk": {
     "pop": 9000,
-    "carOwn": 0.3,
-    "visitors": 900,
+    "carOwn": 0.32,
+    "visitors": 1500,
     "streetSpots": 4200,
     "garages": [],
     "garageBacklog": [],
@@ -468,7 +470,7 @@
    },
    "rand": {
     "pop": 13000,
-    "carOwn": 0.38,
+    "carOwn": 0.42,
     "visitors": 300,
     "streetSpots": 8000,
     "garages": [],
@@ -488,8 +490,8 @@
   "reserve": 2000000,
   "staffMargin": 1.1,
   "paidBezTrigger": 0.85,
-  "garageBezTrigger": 0.95,
-  "bikeShortTrigger": 0.2,
+  "garageBezTrigger": 0.9,
+  "bikeShortTrigger": 0.1,
   "minSlack": 1000000
  }
 }

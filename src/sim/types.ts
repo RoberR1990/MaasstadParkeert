@@ -39,7 +39,7 @@ export interface Wijk {
 export interface QuarterRow {
   q: number; year: number; bewoner: number; ondernemer: number; bezoeker: number; fietser: number; stad: number; wethouder: number; blij: number;
   fonds: number; revenue: number; costs: number; backlog: number; closed: number; netheid: number; avgSearch: number; searchCentrum: number;
-  dekking: number; naleving: number; klantBacklog: number; bikeShort: number; appShare: number;
+  dekking: number; naleving: number; klantBacklog: number; bikeShort: number; appShare: number; afgeroomd: number;
 }
 
 export interface GameState {
@@ -53,9 +53,9 @@ export interface GameState {
   effects: ActiveEffect[];
   objections: number; klantBacklog: number;
   netheid: number; schoonRatioPrev: number;
-  firstClosureQuarter: number | null; negFondsQuarters: number;
+  firstClosureQuarter: number | null; negFondsQuarters: number; afgeroomd: number;
   rejected: string[]; messages: string[];
   history: QuarterRow[];
 }
 
-export interface Score { score: number; meanBlij: number; negFondsQuarters: number; backlogEnd: number; fondsEnd: number; persona: Record<string, number> }
+export interface Score { score: number; meanBlij: number; negFondsQuarters: number; backlogEnd: number; fondsEnd: number; afgeroomd: number; penalties: number; persona: Record<string, number> }

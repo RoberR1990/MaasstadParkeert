@@ -57,8 +57,9 @@ export function finalScore(s: GameState, c: Config): Score {
   const backlogEnd = h.length ? h[h.length - 1].backlog : 0;
   const persona: Record<string, number> = {};
   for (const k of PERSONAS) persona[k] = h.reduce((a, r) => a + r[k], 0) / Math.max(1, h.length);
+  const penalties = s.negFondsQuarters * sc.negFondsPenaltyPerQuarter + backlogEnd * sc.backlogPenaltyPerPoint;
   return {
-    score: meanBlij * sc.scoreScale - s.negFondsQuarters * sc.negFondsPenaltyPerQuarter - backlogEnd * sc.backlogPenaltyPerPoint,
-    meanBlij, negFondsQuarters: s.negFondsQuarters, backlogEnd, fondsEnd: s.fonds, persona,
+    score: meanBlij * sc.scoreScale - penalties,
+    meanBlij, negFondsQuarters: s.negFondsQuarters, backlogEnd, fondsEnd: s.fonds, afgeroomd: s.afgeroomd, penalties, persona,
   };
 }

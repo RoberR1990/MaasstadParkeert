@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadConfig } from '../src/sim/load';
-import { createState, tick, searchTime } from '../src/sim/model';
+import { createState, tick, searchTime, onderuitputting } from '../src/sim/model';
 import { finalScore } from '../src/sim/score';
 import { applyEffect, expireEffects } from '../src/sim/effects';
 import { BOTS } from '../tools/bots';
@@ -63,4 +63,18 @@ test('policy cooldown: max 1 change per wijk per year', () => {
   let s = createState(cfg, 1);
   s = tick(s, [{ type: 'setTariff', wijk: 'centrum', level: 'laag' }, { type: 'setPermit', wijk: 'centrum', level: 'krap' }], cfg);
   assert.equal(s.wijken.centrum.tariff, 'laag'); assert.equal(s.wijken.centrum.permit, 'normaal'); assert.equal(s.rejected.length, 1);
+});
+
+test('onderuitputting: fonds above reserve cap flows back at year close and is counted', () => {
+  let s = createState(cfg, 1);
+  s.fonds = 50e6;
+  for (let q = 0; q < 3; q++) { s = tick(s, [], cfg); assert.equal(s.afgeroomd, 0); assert.ok(s.fonds > cfg.finance.reserveCap); }
+  s = tick(s, [], cfg);                                   // 4th quarter closes the budget year
+  assert.equal(s.fonds, cfg.finance.reserveCap);
+  assert.ok(s.afgeroomd > 20e6);
+  assert.equal(s.history[3].fonds, cfg.finance.reserveCap);
+  const before = s.afgeroomd; s = tick(s, [], cfg);       // no further sweep mid-year
+  assert.equal(s.afgeroomd, before);
+  const low = createState(cfg, 1); low.fonds = 1e6; onderuitputting(low, cfg);
+  assert.equal(low.fonds, 1e6); assert.equal(low.afgeroomd, 0);   // below the cap nothing is lost
 });

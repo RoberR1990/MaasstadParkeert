@@ -49,7 +49,7 @@ export function createState(c: Config, seed: number): GameState {
     quarter: 0, rngState: seed >>> 0, seed, fonds: c.finance.startFonds, yearBudget: c.finance.yearBudget, wageIndex: 1,
     appShare: c.model.appShare.start, teamMood: c.start.teamMood, staff: { monteur: 0, schoonmaker: 0, handhaver: 0, klantcontact: 0 },
     hiring: [], queue: [], scanautos: c.start.scanautos, wijken, effects: [], objections: c.model.startObjections, klantBacklog: 0,
-    netheid: 80, schoonRatioPrev: 1.1, firstClosureQuarter: null, negFondsQuarters: 0, rejected: [], messages: [], history: [],
+    netheid: 80, schoonRatioPrev: 1.1, firstClosureQuarter: null, negFondsQuarters: 0, afgeroomd: 0, rejected: [], messages: [], history: [],
   };
   const need = staffNeeds(s, c);
   for (const r of ROLES) s.staff[r] = Math.round(need[r] * c.staff.startBuffer * 10) / 10;
@@ -69,8 +69,20 @@ export function tick(prev: GameState, actions: Action[], c: Config, events: Effe
   for (const a of actions) applyAction(s, a, c, rng);
   simulate(s, c, rng);
   advanceQueues(s, c);
+  if ((q + 1) % c.finance.budgetEvery === 0) onderuitputting(s, c);
   s.rngState = rng.state; s.quarter++;
   return s;
+}
+
+/** Onderuitputting at year close (= the next budget moment, so also after the last quarter): fonds above the reserve cap flows back to algemene middelen and is lost. */
+export function onderuitputting(s: GameState, c: Config) {
+  const cap = c.finance.reserveCap;
+  if (cap == null || s.fonds <= cap) return;
+  const out = s.fonds - cap;
+  s.fonds = cap; s.afgeroomd += out;
+  const row = s.history[s.history.length - 1];
+  if (row) { row.fonds = s.fonds; row.afgeroomd = s.afgeroomd; }
+  s.messages.push(`Onderuitputting: ${(out / 1e6).toFixed(1)} M€ terug naar algemene middelen`);
 }
 
 function applyAction(s: GameState, a: Action, c: Config, rng: Rng) {
@@ -248,7 +260,8 @@ function simulate(s: GameState, c: Config, rng: Rng) {
   }
 
   // rule 7: netheid follows last quarter's cleaning ratio; rule 8: bike shortage
-  s.netheid = clamp(m.netheidPerRatio * s.schoonRatioPrev, 0, 100);
+  const netheidTarget = clamp(m.netheidPerRatio * s.schoonRatioPrev, 0, 100);
+  s.netheid = clamp(s.netheid + (netheidTarget - s.netheid) * (m.netheidSpeed ?? 1), 0, 100); // dirt builds up (and gets cleaned) gradually
   s.schoonRatioPrev = Math.min(m.netheidRatioCap, rS);
   let short = 0, bd = 0;
   for (const w of W) {
@@ -276,7 +289,7 @@ function simulate(s: GameState, c: Config, rng: Rng) {
   s.history.push({
     q, year: c.startYear + Math.floor(q / 4), ...ev, fonds: s.fonds, revenue, costs, backlog, closed: closedCount, netheid: s.netheid,
     avgSearch: wsr('search'), searchCentrum: s.wijken.centrum.m.search, dekking, naleving: naW > 0 ? naSum / naW : 1,
-    klantBacklog: s.klantBacklog, bikeShort, appShare: s.appShare,
+    klantBacklog: s.klantBacklog, bikeShort, appShare: s.appShare, afgeroomd: s.afgeroomd,
   });
   for (const w of W) if (w.introLeft > 0) w.introLeft--;
 }
