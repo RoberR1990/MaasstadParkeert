@@ -136,7 +136,7 @@ Gebeurteniskaarten zijn papier; **Momenten** zijn de piekervaringen die het spel
 
 **Verloop van een Moment**
 1. **Aankondiging** — kalenderstrip bovenin: "Over 2 kwartalen: Marathon". Tijd om voor te bereiden.
-2. **Voorbereiden** — 2–3 keuzes met kosten: extra handhaving, verkeersregelaars, pendelbussen vanaf P+R, garage-tarief evenement, bewonersbrief. Voorbereiding geldt alleen als je de mensen/assets hebt (beheer telt ook hier).
+2. **Voorbereiden** — partners (Verkeer, Politie, Evenementen) besluiten eerst; Parkeren is volgend. Daarna 2–3 eigen keuzes met kosten: extra handhaving, pendelbussen vanaf P+R, garage-tarief evenement, bewonersbrief, of "overleg met partners". Voorbereiding geldt alleen als je de mensen/assets hebt (beheer telt ook hier).
 3. **Live (30–45 s)** — tijd vertraagt, camera vliegt erheen, mensenmassa en verkeer op de kaart, muziek/geluid zwelt aan. Eén eenvoudige actie: tik op garages met vrije plekken om de verkeersstroom erheen te sturen, of sleep afzettingen. Goed gestuurd = minder "?"-auto's.
 4. **Krantenkop** — fictieve krant ("De Maasbode") met kop + reacties van Rotterdammerts; effect op de Rotterdammert-score en de wethouder.
 

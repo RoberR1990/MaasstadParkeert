@@ -1,6 +1,6 @@
 # Ketens — hoe één keuze door de afdeling rolt
 
-Status: concept v0.1 voor validatie door Robert. ❓ = check met het vak: klopt dit voor Rotterdam?
+Status: v0.2 — eerste validatie Robert (26-10) verwerkt. ❓ = check met het vak: klopt dit voor Rotterdam?
 Doel: in het spel ziet de speler na een keuze de **kettingreactie** (animatie langs teams) en de **werkdruk per team** oplopen. Dit is de kern van "elkaars werk begrijpen". Klopt een keten niet, dan ondermijnt dat het hele spel — daarom eerst hier valideren.
 
 ## Teams in het spel (personages)
@@ -18,7 +18,7 @@ Doel: in het spel ziet de speler na een keuze de **kettingreactie** (animatie la
 | Data & informatie | parkeerdruk meten, monitoren | (ondersteunend) |
 | Communicatie | bewonersbrieven, borden, campagnes | invoering, evenementen |
 
-❓ Mist er een team, of zijn er teams die in het echt samen één team zijn?
+✅ Teamindeling akkoord.
 
 ---
 
@@ -58,7 +58,7 @@ flowchart LR
 ```
 
 - **Les:** minder monteurs scheelt geld op papier en kost meer via bezwaren en derving. Hoe groter het aandeel app-betalers, hoe kleiner de schade.
-- ❓ Doen jullie monteurs dit zelf, of loopt het via leverancierscontracten (zoals Flowbird)? In dat laatste geval wordt het in het spel "contract-SLA kopen" in plaats van "monteur aannemen".
+- ✅ Monteurs zijn eigen personeel → in het spel blijft het "monteur aannemen" (werving duurt 2 kw).
 
 ## K3. Garage bouwen
 
@@ -75,7 +75,7 @@ flowchart LR
 ```
 
 - **Les:** de bouw is het begin. Het straatplekken-voordeel komt pas na een verkeersbesluit, met vertraging en weerstand.
-- ❓ Hoe lang duurt een verkeersbesluit voor het opheffen van straatplekken realistisch, inclusief bezwaar?
+- ✅ In het echt heel lang; in het spel gestileerd: verkeersbesluit = 2 kw + 25% kans op bezwaar (+1 kw, bewoners −). Nabespreking benoemt dat het in werkelijkheid langer duurt.
 
 ## K4. Betaald parkeren invoeren in een wijk
 
@@ -110,7 +110,7 @@ flowchart LR
 ```
 
 - **Les:** een lage parkeernorm werkt alleen met alternatieven. Anders schuif je het probleem door naar Parkeren.
-- ❓ Heeft Parkeren in het echt invloed op de parkeernorm, of krijg je die als voldongen feit? Dat bepaalt of het een knop of een gebeurtenis wordt.
+- ✅ Parkeren heeft invloed → parkeernorm blijft een **knop** (ONTWERP §4b), maar werkt pas door bij de volgende nieuwbouw.
 
 ## K6. Evenement: Feyenoord speelt thuis
 
@@ -119,7 +119,8 @@ flowchart LR
   A[Aankondiging: thuiswedstrijd] --> B[Voorbereiden]
   B --> B1[Extra handhaving<br/>weekend = overuren]
   B --> B2[P+R + pendelbus]
-  B --> B3[Verkeersregelaars]
+  P[Partners besluiten eerst<br/>Verkeer, Politie, Evenementen] --> B
+  B --> B3[Overleg met partners]
   B --> B4[Bewoners informeren]
   B1 & B2 & B3 & B4 --> C[Live: stroom naar De Kuip]
   C --> D[Foutparkeren rond stadion<br/>Handhaving]
@@ -128,7 +129,7 @@ flowchart LR
 ```
 
 - **Les:** een evenement is vooral voorbereiding, en de voorbereiding kan alleen met mensen en assets die je al hebt.
-- ❓ Wie organiseert dit in het echt? Waar houdt Parkeren op en begint evenementen, verkeer of de politie?
+- ✅ Parkeren heeft invloed maar is meestal **volgend** op evenementen, verkeer en politie. In het spel: partners nemen eerst besluiten (bijv. "Verkeer sluit de Erasmusbrug af", "Politie wil geen auto's rond De Kuip") en die krijg je als gegeven. Jouw keuzes zijn alleen Parkeren-eigen: extra handhaving, garagetarief evenement, P+R/pendel inkopen, bewoners informeren. Eén keuze per Moment: "Overleg met partners" (kost tijd, kans dat hun besluit gunstiger uitvalt).
 
 ## K7. Bezuinigen op schoonmaak
 
