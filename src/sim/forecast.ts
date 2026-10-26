@@ -23,7 +23,12 @@ export interface Forecast {
 const two = (s: GameState, actions: Action[], c: Config) => { const a = tick(s, actions, c); return [a, tick(a, [], c)] as const; };
 
 export function forecast(s: GameState, plan: Action[], extra: Action[], c: Config, wijk: string | null = null): Forecast {
-  const [b1, b2] = two(s, plan, c), [w1, w2] = two(s, [...plan, ...extra], c);
+  return compare(s, plan, [...plan, ...extra], c, wijk);
+}
+
+/** Like forecast(), but with two complete plans (e.g. Moment picks A versus picks A+B). */
+export function compare(s: GameState, planBase: Action[], planWith: Action[], c: Config, wijk: string | null = null): Forecast {
+  const [b1, b2] = two(s, planBase, c), [w1, w2] = two(s, planWith, c);
   const hb = b1.history[b1.history.length - 1], hw = w1.history[w1.history.length - 1];
   const rb = b2.history[b2.history.length - 1], rw = w2.history[w2.history.length - 1];
   const teamDelta = {} as Record<TeamId, number>, teamLoad = {} as Record<TeamId, number>;

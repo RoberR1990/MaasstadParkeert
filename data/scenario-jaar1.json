@@ -260,5 +260,18 @@
         }
       ]
     }
-  ]
+  ],
+  "ui": {
+    "heat": {
+      "green": 3,
+      "red": 10
+    },
+    "meterMax": 1.4,
+    "klachten": {
+      "floor": 4,
+      "perMinPerKResident": 0.9,
+      "intro": 12,
+      "hoog": 6
+    }
+  }
 }
