@@ -209,3 +209,16 @@ Keuze: het rekenmodel wordt meteen in TypeScript geschreven, niet eerst in Pytho
 2. Interne grappen voor easter egg #13.
 3. Klopt de grootte-orde van de getallen in §4 en §5? Laat een vakcollega er een uur naar kijken.
 4. Naam: "Maasstad Parkeert" is een werktitel.
+
+## 13. Serieuze laag (besloten 26-10)
+
+| # | onderdeel | status |
+|---|---|---|
+| 1 | **Collega's als personages** per team; teksten uit korte interviews ("Wat wil je dat anderen van jouw werk weten?") | ja |
+| 2 | **Werkdruk zichtbaar** per team (meter + zwetend personage, achterstand lekt door) | ja |
+| 3 | **Kettingreacties** na keuzes, zie `docs/KETENS.md` (eerst valideren met het vak) | ja, mits ketens kloppen |
+| 4 | Datamist (zicht op druk alleen met data-investering) | **nee** |
+| 5 | **Dilemma's zonder goed antwoord**; nabespreking toont hoe collega's kozen (anoniem, geaggregeerd) | ja |
+| 8 | **MT-cameo: "Sap"** — oud-MT-lid, vrouw van 65, wijze en droge adviseur die af en toe binnenwipt ("Sap zegt: ..."). Toestemming van de persoon vragen vóór publicatie | ja |
+
+Personages-cast: Ria van Beheer (tutorial), de Rotterdammert (score), Sap (adviseur/oud-MT), één collega per team (K-tabel in KETENS.md).
