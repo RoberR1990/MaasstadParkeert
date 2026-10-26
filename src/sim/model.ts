@@ -32,7 +32,7 @@ export function staffNeeds(s: GameState, c: Config, includeQueue = false): Recor
   };
 }
 
-const blankMetrics = () => ({ demand: 0, supply: 0, bez: 0, search: 2, revenue: 0, visShare: 0, waitShare: 0, naleving: 1, ov: 0 });
+const blankMetrics = () => ({ demand: 0, supply: 0, bez: 0, search: 2, revenue: 0, revGarage: 0, revStreet: 0, revPermit: 0, visShare: 0, waitShare: 0, naleving: 1, ov: 0 });
 
 export function createState(c: Config, seed: number): GameState {
   const wijken: Record<string, Wijk> = {};
@@ -67,8 +67,10 @@ export function tick(prev: GameState, actions: Action[], c: Config, events: Effe
   for (const e of events) applyEffect(s, e);
   if (q % c.finance.budgetEvery === 0) s.fonds += s.yearBudget;
   for (const a of actions) applyAction(s, a, c, rng);
+  // Jaar-1 mode: orders that are due finish *before* the quarter is simulated, so the player sees the effect in the same quarter.
+  if (c.model.instantBuild) advanceQueues(s, c);
   simulate(s, c, rng);
-  advanceQueues(s, c);
+  if (!c.model.instantBuild) advanceQueues(s, c);
   if ((q + 1) % c.finance.budgetEvery === 0) onderuitputting(s, c);
   s.rngState = rng.state; s.quarter++;
   return s;
@@ -233,14 +235,16 @@ function simulate(s: GameState, c: Config, rng: Rng) {
     const streetOcc = occ * streetEff, visShare = demand > 0 ? d.vis / demand : 0;
     const visOnStreet = streetOcc * visShare;
     const payable = s.appShare + (1 - s.appShare) * clamp(w.automaten * c.assets.automaat.spotsPerAutomaat / Math.max(1, w.streetSpots), 0, 1);
-    let rev = occ * garageCap * m.garageRevenuePerSpotQuarter;
+    const revGarage = occ * garageCap * m.garageRevenuePerSpotQuarter;
+    let rev = revGarage, revStreet = 0, revPermit = 0;
     if (w.paid) {
-      rev += visOnStreet * m.paidHoursPerSpotQuarter * c.policy.tariffEur[w.tariff] * nal * payable * (1 - malfEff);
-      rev += Math.min(d.res, streetEff) * m.permitFeePerQuarter;
+      revStreet = visOnStreet * m.paidHoursPerSpotQuarter * c.policy.tariffEur[w.tariff] * nal * payable * (1 - malfEff);
+      revPermit = Math.min(d.res, streetEff) * m.permitFeePerQuarter;
+      rev += revStreet + revPermit;
       violating += visOnStreet * (1 - nal) * (m.tariffFineMult?.[w.tariff] ?? 1); // higher tariff -> bigger fines -> more objections
       naSum += nal * w.streetSpots; naW += w.streetSpots;
     }
-    Object.assign(w.m, { demand, supply, bez, search: searchTime(bez, c), revenue: rev, visShare, naleving: nal });
+    Object.assign(w.m, { demand, supply, bez, search: searchTime(bez, c), revenue: rev, revGarage, revStreet, revPermit, visShare, naleving: nal });
     revenue += rev;
   }
 
@@ -288,7 +292,7 @@ function simulate(s: GameState, c: Config, rng: Rng) {
   const ev = evaluate(s, c, { malfEff, bikeShort, newClosures, closedCount });
   const wsr = (k: 'search') => sum(W.map(w => w.m[k] * (w.pop + w.newPop))) / sum(W.map(w => w.pop + w.newPop));
   s.history.push({
-    q, year: c.startYear + Math.floor(q / 4), ...ev, fonds: s.fonds, revenue, costs, backlog, closed: closedCount, netheid: s.netheid,
+    q, year: c.startYear + Math.floor(q / 4), ...ev, fonds: s.fonds, revenue, costs, opex, staffCost, overhead: c.finance.fixedOverheadPerYear * s.wageIndex / 4, backlog, closed: closedCount, netheid: s.netheid,
     avgSearch: wsr('search'), searchCentrum: s.wijken.centrum.m.search, dekking, naleving: naW > 0 ? naSum / naW : 1,
     klantBacklog: s.klantBacklog, bikeShort, appShare: s.appShare, afgeroomd: s.afgeroomd,
   });

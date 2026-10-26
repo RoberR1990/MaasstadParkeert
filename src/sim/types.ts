@@ -24,7 +24,7 @@ export type Action =
 
 export interface Asset { cap: number; backlog: number; closed: boolean }
 
-export interface WijkMetrics { demand: number; supply: number; bez: number; search: number; revenue: number; visShare: number; waitShare: number; naleving: number; ov: number }
+export interface WijkMetrics { demand: number; supply: number; bez: number; search: number; revenue: number; revGarage: number; revStreet: number; revPermit: number; visShare: number; waitShare: number; naleving: number; ov: number }
 
 export interface Wijk {
   id: string; pop: number; carOwn: number; newPop: number; visitors: number;
@@ -38,7 +38,7 @@ export interface Wijk {
 
 export interface QuarterRow {
   q: number; year: number; bewoner: number; ondernemer: number; bezoeker: number; fietser: number; stad: number; wethouder: number; blij: number;
-  fonds: number; revenue: number; costs: number; backlog: number; closed: number; netheid: number; avgSearch: number; searchCentrum: number;
+  fonds: number; revenue: number; costs: number; opex: number; staffCost: number; overhead: number; backlog: number; closed: number; netheid: number; avgSearch: number; searchCentrum: number;
   dekking: number; naleving: number; klantBacklog: number; bikeShort: number; appShare: number; afgeroomd: number;
 }
 

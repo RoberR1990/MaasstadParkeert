@@ -5,7 +5,8 @@
   "scripts": {
     "sim": "tsx tools/run.ts",
     "test": "tsx --test tests/*.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "jaar1": "tsx tools/jaar1.ts"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

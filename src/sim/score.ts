@@ -2,7 +2,7 @@ import type { Config, GameState, Score } from './types';
 
 export const PERSONAS = ['bewoner', 'ondernemer', 'bezoeker', 'fietser', 'stad', 'wethouder'] as const;
 const clamp = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x));
-const searchSat = (t: number, c: Config) => 100 * clamp(1 - (t - c.model.search.base) / (c.score.searchBad - c.model.search.base), 0, 1);
+export const searchSat = (t: number, c: Config) => 100 * clamp(1 - (t - c.model.search.base) / (c.score.searchBad - c.model.search.base), 0, 1);
 
 export interface GlobalMetrics { malfEff: number; bikeShort: number; newClosures: number; closedCount: number }
 

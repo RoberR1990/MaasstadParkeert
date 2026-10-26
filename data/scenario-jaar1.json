@@ -1,0 +1,136 @@
+{
+  "name": "Jaar 1",
+  "seed": 20261026,
+  "overrides": {
+    "wijkOrder": [
+      "centrum",
+      "kopbrug",
+      "kuipwijk",
+      "noord"
+    ],
+    "neighbors": {
+      "centrum": [
+        "kopbrug",
+        "noord",
+        "kuipwijk"
+      ],
+      "kopbrug": [
+        "centrum",
+        "kuipwijk"
+      ],
+      "kuipwijk": [
+        "kopbrug",
+        "centrum"
+      ],
+      "noord": [
+        "centrum"
+      ]
+    },
+    "finance": {
+      "startFonds": 26000000,
+      "yearBudget": 0,
+      "fixedOverheadPerYear": 20000000
+    },
+    "assets": {
+      "garage": {
+        "time": 1
+      },
+      "stalling": {
+        "time": 1
+      },
+      "pr": {
+        "onlyIn": "noord"
+      }
+    },
+    "staff": {
+      "hireDelay": 2,
+      "startBuffer": 1.25
+    },
+    "policy": {
+      "cooldownQuarters": 2
+    },
+    "model": {
+      "instantBuild": true,
+      "prTargets": {
+        "centrum": 0,
+        "kopbrug": 0
+      }
+    },
+    "start": {
+      "wijken": {
+        "centrum": {
+          "tariff": "midden",
+          "visitors": 4900,
+          "bikeSpots": 3800
+        },
+        "kopbrug": {
+          "streetSpots": 1800,
+          "bikeSpots": 2400
+        },
+        "kuipwijk": {
+          "streetSpots": 4600,
+          "bikeSpots": 3800
+        },
+        "noord": {
+          "bikeSpots": 4900,
+          "streetSpots": 3500
+        }
+      }
+    }
+  },
+  "goal": {
+    "blijMin": 70,
+    "fondsMin": 0,
+    "marathon": {
+      "quarter": 3,
+      "announceQuarter": 2,
+      "wijk": "centrum",
+      "maxSearch": 9
+    },
+    "starsFondsOver": 3000000,
+    "loadOrange": 0.95,
+    "loadRed": 1.15
+  },
+  "growth": [
+    {
+      "quarter": 1,
+      "label": "Nieuwe torens op de Kop van Zuid",
+      "effects": [
+        {
+          "target": "wijken.kopbrug.newPop",
+          "op": "add",
+          "value": 1800
+        },
+        {
+          "target": "wijken.kopbrug.visitors",
+          "op": "add",
+          "value": 250
+        },
+        {
+          "target": "wijken.kopbrug.bikeDemand",
+          "op": "add",
+          "value": 900
+        },
+        {
+          "target": "wijken.kopbrug.streetSpots",
+          "op": "add",
+          "value": 60
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "quarter": 3,
+      "label": "Marathon Rotterdam",
+      "effects": [
+        {
+          "target": "wijken.centrum.visitors",
+          "op": "mul",
+          "value": 1.5,
+          "durationQuarters": 1
+        }
+      ]
+    }
+  ]
+}
