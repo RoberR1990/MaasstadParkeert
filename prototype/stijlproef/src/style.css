@@ -39,7 +39,7 @@ svg.ico { width: 1.25em; height: 1.25em; flex: none; display: block; }
 #app { position: fixed; inset: 0; pointer-events: none; transition: opacity 0.7s ease; }
 #app.hidden { display: block !important; opacity: 0; }
 #app > * { pointer-events: auto; }
-#app > #floaters, #app > #hint { pointer-events: none; }
+#app > #floaters, #app > #hint, #app > .labels, #app > .cardlayer, #app > .toast { pointer-events: none; }
 .lbl { font: 800 11px/1 var(--font-ui); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink2); }
 .num { font: 600 24px/1 var(--font-display); letter-spacing: 0.01em; font-variant-numeric: tabular-nums; }
 .num.sm { font-size: 18px; }
@@ -348,3 +348,5 @@ button.round.live { background: linear-gradient(180deg, #fff3d8, #ffe2a2); color
 
 .edge-chip { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; border: 0; cursor: pointer; padding: 7px 12px 8px; border-radius: 99px; background: var(--brand); color: #fff; font: 800 12px/1 var(--font-ui); box-shadow: 0 4px 12px rgba(0, 50, 10, 0.35), inset 0 -2px 0 rgba(0, 0, 0, 0.18); white-space: nowrap; transition: transform 0.2s var(--spring); }
 .edge-chip:hover { transform: translate(-50%, -50%) scale(1.07); }
+
+@media (max-width: 700px) { .edge-chip { display: none; } }

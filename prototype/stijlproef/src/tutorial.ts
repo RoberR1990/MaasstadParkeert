@@ -17,7 +17,7 @@ interface Deps {
 
 const LINES = [
   { text: 'Zie je die auto\'s rondjes rijden? Die zoeken een plek.', btn: 'Volgende' },
-  { text: 'Zet een garage neer.', btn: '' },
+  { text: 'Zet een garage neer: tik onderaan op Garage, en daarna op een vrije plek met een geel pijltje.', btn: '' },
   { text: 'Maar let op: wie bouwt, moet ook beheren.', btn: 'Begrepen!' },
 ];
 
