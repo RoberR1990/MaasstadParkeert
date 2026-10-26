@@ -1,7 +1,7 @@
 # Speelbare kern — "Jaar 1" (eisen v0.1)
 
 Basis: feedback Robert (26-10) + 4 persona-playtests (Fatima/handhaver, Kevin/monteur, Marja/MT, Joost/data-gamer) op stijlproef r2.
-Doel van deze stap: van stijlproef naar een **speelbare ronde van ±8 minuten met begin, doel en eind**, waarin oorzaak → gevolg → keten zichtbaar is. Desktop eerst, telefoon tweede.
+Doel van deze stap: van stijlproef naar een **speelbare ronde van ±5 minuten met begin, doel en eind**, waarin oorzaak → gevolg → keten zichtbaar is. Desktop eerst, telefoon tweede.
 
 ## Wat de tests unaniem zeiden
 | bevinding | wie |
@@ -16,12 +16,12 @@ Doel van deze stap: van stijlproef naar een **speelbare ronde van ±8 minuten me
 ## Spelverloop Jaar 1
 
 ```
-Intro (20 s): Ria + Sap schetsen het probleem en het doel
+Intro (15 s): Ria + Sap schetsen het probleem en het doel
  ┌─ Kwartaal ×4 ─────────────────────────────────────────────┐
  │ 1. PLANNEN (klok staat stil)                               │
  │    heatmap parkeerdruk per wijk, wijkpaneel, bouwen,       │
  │    beleid, personeel — elk met VOORSPELLING vóór bevestigen │
- │ 2. SPELEN (±40 s, versneld): stad leeft, auto's zoeken,    │
+ │ 2. SPELEN (±20 s, versneld): stad leeft, auto's zoeken,    │
  │    gebeurtenis/Moment speelt af                             │
  │ 3. AFREKENING: inkomsten − uitgaven, KPI's oud→nieuw,      │
  │    "waarom" (top-3 oorzaken), kettingreactie langs teams,  │
@@ -29,7 +29,7 @@ Intro (20 s): Ria + Sap schetsen het probleem en het doel
  └────────────────────────────────────────────────────────────┘
 Eindscherm: krantenkop, score, 3 lessen ("jij bouwde X maar…")
 ```
-Geen wachten: de speler drukt zelf op **"Volgend kwartaal"**. Dat lost "tempo te langzaam" op.
+Geen wachten: de speler drukt zelf op **"Volgend kwartaal"**. Dat lost "tempo te langzaam" op. Tijdsbudget: ±5 min totaal (per kwartaal ±40 s plannen, 20 s spelen, 15 s afrekening).
 
 ## Doel en startprobleem
 - **Start:** Blaak/Centrum staat rood (zoektijd ±12 min), Rotterdammert 52 "Chagrijnig". In Q2 komen nieuwe torens op de Kop van Zuid. In Q4 is de **Marathon**.
