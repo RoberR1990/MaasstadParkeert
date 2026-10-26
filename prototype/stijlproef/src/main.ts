@@ -118,7 +118,8 @@ hud.onPressure = (v) => { game.pressure = v; };
 hud.onClock = () => { game.paused = !game.paused; };
 hud.onRain = () => {
   env.rainTarget = env.rainTarget > 0 ? 0 : 1; hud.setRain(env.rainTarget > 0);
-  if (env.rainTarget > 0 && !rainToastShown) { rainToastShown = true; hud.toast('Steden schuilen niet wanneer het regent.', 'Stadsbeheer Rotterdam', 6200); }
+  // Easter egg: the Kleinpolderplein slogan only appears when it rains AND the camera is near our office.
+  if (env.rainTarget > 0 && !rainToastShown && nearKleinpolder()) { rainToastShown = true; hud.toast('Steden schuilen niet wanneer het regent.', 'Easter egg · Kleinpolderplein', 6200); }
 };
 hud.onMute = () => { audio.setMuted(!audio.muted); hud.setMute(audio.muted); };
 hud.onTool = (id) => selectTool(id);
@@ -274,6 +275,7 @@ const tip = $('tooltip');
 let tipPinned = 0;
 let labelsAll = false;
 const chips = new Map<string, HTMLElement>();
+function nearKleinpolder() { const k = world.labels.find((l) => l.id === 'kleinpolder'); return !!k && Math.hypot(controls.target.x - k.x, controls.target.z - k.z) < 60; }
 function labelScale() { return window.innerHeight / (2 * camera.position.distanceTo(controls.target) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))); }
 function labelAt(cx: number, cy: number) {
   const k = labelScale();
