@@ -1,8 +1,11 @@
 // All player-facing Dutch text that depends on the simulation (explanations, reactions, lessons, headlines, advice).
 import type { Cause } from '@sim/round';
-import type { Role } from '@sim/types';
+import type { TeamId } from '@sim/types';
+import { TEAMS } from '@sim/types';
+import { tick } from '@sim/model';
+import { teamLevel } from '@sim/round';
 import { WIJK_BY_ID, type WijkId } from './wijken';
-import { GOAL, ROLE_TEAM, type Ending, type PlanItem, type QuarterResult, type Session } from './session';
+import { GOAL, TC, cfg, type Ending, type PlanItem, type QuarterResult, type Session, type TeamView } from './session';
 
 export const fmtMin = (m: number) => `${m >= 19.5 ? '20+' : m.toFixed(m < 10 ? 1 : 0).replace('.', ',')} min`;
 const minTxt = (m: number) => (m >= 19.5 ? '20+' : String(Math.round(m)));
@@ -96,18 +99,170 @@ export const SAY = {
 export const moodWord = (h: number) => (h > 78 ? 'Dolblij' : h > 62 ? 'Tevreden' : h > 46 ? 'Twijfelend' : h > 30 ? 'Chagrijnig' : 'Woedend');
 export const moodSet = (h: number) => (h > 76 ? SAY.happy : h > 62 ? SAY.good : h > 46 ? SAY.mid : h > 30 ? SAY.bad : SAY.mad);
 
-// ---------------------------------------------------------------- Sap's advice (once, after the first afrekening)
-export function sapAdvice(session: Session, res: QuarterResult): string {
-  const s = session.state, built = (k: string) => res.items.some((i) => i.kind === k);
-  const lv = res.levels;
-  if (built('garage') && (lv.schoonmaker !== 'groen' || lv.monteur !== 'groen'))
-    return 'Mooie garage, jongen. Maar wie maakt ’m schoon? Neem in het Team-paneel een schoonmaker en een monteur aan. Dat duurt een kwartaal.';
-  if (built('scanauto') && lv.handhaver !== 'groen')
-    return 'Een scanauto zonder handhaver blijft gewoon staan. Neem iemand aan bij Handhaving, dat duurt een kwartaal.';
-  if (s.wijken.centrum.m.search > GOAL.marathon.maxSearch)
-    return `Centrum staat nog rood (${minTxt(s.wijken.centrum.m.search)} min). En in kwartaal ${GOAL.marathon.quarter + 1} komt de Marathon: dan wil je daar onder de ${GOAL.marathon.maxSearch} minuten zitten.`;
-  if (s.fonds < 10e6) return `Je fonds is ${fmtM(s.fonds)}. Het beheer loopt elk kwartaal door, ook als je niets bouwt. Hou dat in de gaten.`;
-  return 'Goed bezig. Maar pas op: wie bouwt, moet ook beheren. Kijk elk kwartaal naar de werkdruk bij de teams.';
+// ---------------------------------------------------------------- teams (copy)
+export interface TeamInfo { id: TeamId; name: string; short: string; person: string; does: string; drivers: string }
+export const TEAM_INFO: Record<TeamId, TeamInfo> = {
+  handhaving: { id: 'handhaving', name: 'Handhaving', short: 'Handhaving', person: 'Fatima', does: 'Rijdt met de scanauto, controleert en schrijft bonnen.', drivers: 'Elke scanauto vraagt een handhaver erbij. Evenementen vragen extra uren.' },
+  backoffice: { id: 'backoffice', name: 'Backoffice & Bezwaar', short: 'Backoffice', person: 'Daan', does: 'Beoordeelt scans, stuurt naheffingen en behandelt bezwaren.', drivers: 'Meer scans geeft meer naheffingen. Meer naheffingen geeft meer bezwaren.' },
+  techniek: { id: 'techniek', name: 'Techniek', short: 'Techniek', person: 'Kevin', does: 'Repareert betaalautomaten, slagbomen en liften.', drivers: 'Garages en betaalautomaten. Storingen kosten extra tijd.' },
+  schoonmaak: { id: 'schoonmaak', name: 'Schoonmaak & Garagebeheer', short: 'Schoonmaak', person: 'Mehmet', does: 'Houdt garages en stallingen schoon en veilig.', drivers: 'Elke garage en elke fietsenstalling die je bouwt.' },
+  klantcontact: { id: 'klantcontact', name: 'Klantcontact', short: 'Klantcontact', person: 'Priya', does: 'Beantwoordt telefoon, mail en chat van Rotterdammers.', drivers: 'Elke verandering die burgers raakt: een nieuw tarief, een bon, een storing.' },
+};
+const PART_NL: Record<string, string> = {
+  scanautos: 'scanauto’s', scans: 'scans beoordelen', bezwaren: 'bezwaren', garages: 'garages', automaten: 'betaalautomaten', storingen: 'storingen', stallingen: 'stallingen', pr: 'P+R',
+  klachten: 'vragen en klachten', invoering: 'wennen aan betaald parkeren', dilemma: 'verzoek van de ondernemer',
+  moment_handhaving: 'extra handhaving Marathon', moment_evenementtarief: 'vragen over evenemententarief', moment_pendel: 'pendeldienst', moment_brief: 'reacties op de bewonersbrief',
+};
+const partName = (k: string) => PART_NL[k] ?? (k.startsWith('beleid_') ? 'tariefwijziging' : k);
+export const fte1 = (v: number) => v.toFixed(1).replace('.', ',');
+export const pct = (v: number) => `${v >= 0 ? '+' : '−'}${Math.round(Math.abs(v))}%`;
+/** Tooltip text for a team card: what the team does and what its work is made of right now. */
+export function teamTip(v: TeamView): string {
+  const info = TEAM_INFO[v.id];
+  const parts = Object.entries(v.parts).filter(([, x]) => x > 0.04).sort((a, b) => b[1] - a[1]).map(([k, x]) => `${partName(k)} ${fte1(x)}`).join(' · ');
+  const back = v.backlog > 0.2 ? ` Achterstand: ${fte1(v.backlog)} FTE werk blijft liggen.` : '';
+  return `${info.name}|${info.does} Werk nu: ${parts || 'nog weinig'} (samen ${fte1(v.demand)} FTE). Er werken ${fte1(v.fte)} FTE.${back} ${info.drivers}`;
+}
+export const levelWord = (l: 'groen' | 'oranje' | 'rood') => (l === 'groen' ? 'Rustig' : l === 'oranje' ? 'Druk' : 'Overbelast');
+
+// ---------------------------------------------------------------- occupancy wording (never "125% vol")
+export function bezWord(bez: number): { short: string; long: string; sev: 'ok' | 'mid' | 'bad' } {
+  if (bez > 1.005) { const n = Math.max(2, Math.round(bez / (bez - 1))); return { short: `1 op ${n} geen plek`, long: `Overvol: 1 op ${n} auto’s vindt geen plek`, sev: 'bad' }; }
+  if (bez >= 0.93) return { short: 'bijna vol', long: `Bijna vol: ${Math.round(bez * 100)}% van de plekken is bezet`, sev: 'mid' };
+  if (bez >= 0.75) return { short: 'druk', long: `Druk: ${Math.round(bez * 100)}% van de plekken is bezet`, sev: 'mid' };
+  return { short: 'rustig', long: `Rustig: ${Math.round(bez * 100)}% van de plekken is bezet`, sev: 'ok' };
+}
+
+// ---------------------------------------------------------------- chain reaction (KETENS.md K1-K8) for the afrekening
+export interface ChainStep { team: TeamId; line: string; delta: number; level: 'groen' | 'oranje' | 'rood'; soon: boolean }
+export interface Chain { id: string; title: string; steps: ChainStep[] }
+const fmtWork = (d: number, fte: number) => { const n = Math.round((d / Math.max(0.5, fte)) * 100); return Math.abs(n) >= 3 ? ` (werkdruk ${n > 0 ? '+' : '−'}${Math.abs(n)}%)` : ''; };
+interface ChainDef { id: string; title: string; gate?: (items: PlanItem[], res: QuarterResult) => boolean; steps: { team: TeamId; keys: (k: string) => boolean; up: string; flat: string }[]; plan?: (items: PlanItem[], res: QuarterResult) => number }
+const isBeleid = (k: string) => k.startsWith('beleid_');
+const CHAINS: ChainDef[] = [
+  { id: 'K1', title: 'Extra scanauto', gate: (it) => it.some((i) => i.kind === 'scanauto'), plan: (it) => (it.some((i) => i.kind === 'scanauto') ? 0.6 : 0), steps: [
+    { team: 'handhaving', keys: (k) => k === 'scanautos', up: 'De scanauto rijdt rondes: meer kentekens gescand.', flat: 'De scanauto rijdt rondes.' },
+    { team: 'backoffice', keys: (k) => k === 'scans' || k === 'bezwaren', up: 'Scans moeten worden beoordeeld, en een deel wordt bezwaar.', flat: 'Scans en bezwaren worden afgehandeld.' },
+    { team: 'klantcontact', keys: (k) => k === 'scanautos' || k === 'klachten', up: 'Rotterdammers bellen over hun bon.', flat: 'Vragen over bonnen.' }] },
+  { id: 'K2', title: 'Storing aan betaalautomaten', steps: [
+    { team: 'techniek', keys: (k) => k === 'storingen' || k === 'automaten', up: 'Automaten vallen uit: monteurs rukken uit.', flat: 'Monteurs onderhouden de automaten.' },
+    { team: 'klantcontact', keys: (k) => k === 'klachten', up: 'Rotterdammers kunnen niet betalen en bellen.', flat: 'Vragen over betalen.' },
+    { team: 'backoffice', keys: (k) => k === 'bezwaren', up: 'Bonnen voor een defecte automaat worden vernietigd.', flat: 'Bezwaren worden afgehandeld.' }] },
+  { id: 'K3', title: 'Garage bouwen', gate: (it) => it.some((i) => i.kind === 'garage'), plan: (it) => (it.some((i) => i.kind === 'garage') ? 0.5 : 0), steps: [
+    { team: 'techniek', keys: (k) => k === 'garages', up: 'Slagbomen, liften en verlichting moeten onderhouden worden.', flat: 'Onderhoud van de garage.' },
+    { team: 'schoonmaak', keys: (k) => k === 'garages' || k === 'stallingen', up: 'Een garage moet elke dag schoon en veilig zijn.', flat: 'Schoonmaak en toezicht.' }] },
+  { id: 'K4', title: 'Betaald parkeren invoeren', gate: (it) => it.some((i) => i.kind === 'intro'), plan: (it) => (it.some((i) => i.kind === 'intro') ? 1 : 0), steps: [
+    { team: 'klantcontact', keys: (k) => isBeleid(k) || k === 'invoering', up: 'Bewoners bellen: vergunningen, bezoekers, borden.', flat: 'Vragen over het nieuwe beleid.' },
+    { team: 'backoffice', keys: (k) => isBeleid(k), up: 'Vergunningaanvragen en eerste bezwaren stapelen op.', flat: 'Aanvragen en bezwaren.' },
+    { team: 'handhaving', keys: (k) => k === 'scanautos', up: 'Na het wennen begint de handhaving.', flat: 'Handhaving controleert.' }] },
+  { id: 'K5', title: 'Nieuwe woontorens', gate: (_it, res) => res.messages.length > 0 && res.q === 1, steps: [
+    { team: 'klantcontact', keys: (k) => k === 'klachten' || k === 'invoering', up: 'Nieuwe bewoners vragen om een plek.', flat: 'Vragen van nieuwe bewoners.' },
+    { team: 'handhaving', keys: (k) => k === 'scanautos', up: 'Meer auto’s, meer foutparkeren.', flat: 'Handhaving controleert.' }] },
+  { id: 'K6', title: 'Marathon Rotterdam', gate: (_it, res) => res.q === GOAL.marathon.quarter, plan: (it, res) => (res.q === GOAL.marathon.quarter ? 1.2 : 0), steps: [
+    { team: 'handhaving', keys: (k) => k === 'scanautos' || k === 'moment_handhaving', up: 'Straten zijn dicht: handhaving houdt de omgeving vrij.', flat: 'Handhaving rond de route.' },
+    { team: 'klantcontact', keys: (k) => k.startsWith('moment_') || k === 'klachten', up: 'Bewoners en bezoekers bellen over de afsluiting.', flat: 'Vragen over de afsluiting.' },
+    { team: 'schoonmaak', keys: (k) => k === 'garages' || k === 'stallingen', up: 'Na afloop moeten de garages schoon.', flat: 'Schoonmaak na afloop.' }] },
+  { id: 'K7', title: 'Te weinig schoonmaak', steps: [
+    { team: 'schoonmaak', keys: () => true, up: 'Er blijft werk liggen: vuil bouwt zich op.', flat: 'Schoonmaak loopt achter.' },
+    { team: 'klantcontact', keys: (k) => k === 'klachten', up: 'Meldingen over vuil en onveilig voelen stapelen op.', flat: 'Meldingen.' }] },
+  { id: 'K8', title: 'Tarief veranderd', gate: (it) => it.some((i) => i.kind === 'tariff'), plan: (it) => (it.some((i) => i.kind === 'tariff') ? 0.9 : 0), steps: [
+    { team: 'klantcontact', keys: isBeleid, up: 'Ondernemers en bewoners bellen over het nieuwe tarief.', flat: 'Vragen over het tarief.' },
+    { team: 'backoffice', keys: isBeleid, up: 'Meer bezwaren tegen bonnen en tarief.', flat: 'Bezwaren.' }] },
+];
+const sumKeys = (parts: Record<string, number> | undefined, f: (k: string) => boolean) => Object.entries(parts ?? {}).reduce((a, [k, v]) => (f(k) ? a + v : a), 0);
+
+/** The chain that moved the most this quarter (by extra work for the teams in it), or null when nothing rolled through the teams. */
+export function pickChain(res: QuarterResult): Chain | null {
+  if (!res.next.teams || !res.old.teams) return null;
+  const after = tick(res.next, [], cfg), grow = res.messages.length > 0 && res.q === 1;
+  let best: { def: ChainDef; score: number } | null = null;
+  for (const def of CHAINS) {
+    if (def.gate && !def.gate(res.items, res)) continue;
+    let score = def.plan ? def.plan(res.items, res) : 0;
+    if (def.id === 'K5' && grow) score += 0.5;
+    if (def.id === 'K4' && !res.items.some((i) => i.kind === 'intro')) score += 0; // peaks without introduction count for K8
+    if (def.id === 'K7') score += Math.max(0, res.next.teams.units.schoonmaak.achterstand);
+    for (const s of def.steps) {
+      if (def.id === 'K7') break;
+      const a = sumKeys(res.old.teams.units[s.team].parts, s.keys), b = sumKeys(res.next.teams.units[s.team].parts, s.keys), c = sumKeys(after.teams!.units[s.team].parts, s.keys);
+      score += Math.max(0, b - a, c - b);
+    }
+    if (def.id === 'K4' && res.items.some((i) => i.kind === 'tariff') && !res.items.some((i) => i.kind === 'intro')) score *= 0.2;
+    if (!best || score > best.score) best = { def, score };
+  }
+  if (!best || best.score < 0.2) return null;
+  const steps: ChainStep[] = best.def.steps.map((s) => {
+    const a = sumKeys(res.old.teams!.units[s.team].parts, s.keys), b = sumKeys(res.next.teams!.units[s.team].parts, s.keys), c = sumKeys(after.teams!.units[s.team].parts, s.keys);
+    const delta = Math.abs(b - a) >= Math.abs(c - b) ? b - a : c - b;
+    const lvNow = teamLevel(res.next.teams!.units[s.team].load, cfg), lvSoon = teamLevel(after.teams!.units[s.team].load, cfg);
+    const rank = { groen: 0, oranje: 1, rood: 2 } as const;
+    const level = rank[lvSoon] > rank[lvNow] ? lvSoon : lvNow;
+    const word = level === 'rood' ? ' Het team raakt overbelast.' : level === 'oranje' ? ' Het wordt druk.' : '';
+    return { team: s.team, delta, level, soon: rank[lvSoon] > rank[lvNow], line: `${delta > 0.04 ? s.up : s.flat}${fmtWork(delta, res.next.teams!.units[s.team].fte)}${word}` };
+  });
+  return { id: best.def.id, title: best.def.title, steps };
+}
+
+// ---------------------------------------------------------------- Sap: one dry piece of advice per quarter, only when there is a risk
+const q4 = (q: number) => `Q${q}`;
+export function sapAdvice(session: Session, res: QuarterResult): string | null {
+  const s = session.state, nextQ = s.quarter + 1; // quarter number the player is about to plan (1-based)
+  const views = session.teamViews(s);
+  const red = TEAMS.filter((t) => views[t].level === 'rood');
+  const after = s.teams ? tick(s, [], cfg) : null;
+  const soon = after ? TEAMS.filter((t) => teamLevel(after.teams!.units[t].load, cfg) !== 'groen' && views[t].level !== 'rood') : [];
+  const built = (k: string) => res.items.filter((i) => i.kind === k).length;
+  if (red.length) {
+    const t = red[0];
+    const lines: Record<TeamId, string> = {
+      handhaving: 'Scanauto’s zonder genoeg handhavers? Dat is een dure parkeerplek, jongen. Neem iemand aan.',
+      backoffice: 'Scans die blijven liggen worden bezwaren, en bezwaren die te laat komen worden raadsvragen. Backoffice heeft hulp nodig.',
+      techniek: 'Kapotte automaten repareren zichzelf niet. Een monteur kost minder dan de derving.',
+      schoonmaak: built('garage') >= 2 ? `Twee garages en geen schoonmaker? Dat ruik je in ${q4(Math.min(4, nextQ + 1))}, jongen.` : 'Een garage zonder schoonmaker wordt vanzelf een probleem. Dat ruik je, jongen.',
+      klantcontact: 'De telefoon staat roodgloeiend. Wie het beleid verandert, moet ook de telefoon bemensen.',
+    };
+    return `${TEAM_INFO[t].name} staat in het rood. ${lines[t]} Aannemen duurt een kwartaal.`;
+  }
+  if (soon.length) return `${TEAM_INFO[soon[0]].name} loopt volgend kwartaal vol. Aannemen duurt een kwartaal, dus als je nu niets doet, staat het straks in het rood.`;
+  if (s.fonds < 2e6) return `Je fonds is ${fmtM(s.fonds)}. Het beheer loopt elk kwartaal door, ook als je niets bouwt. Hou dat in de gaten.`;
+  const over = Object.values(s.wijken).filter((w) => w.m.bez > 1.1).sort((a, b) => b.m.bez - a.m.bez)[0];
+  if (over) return `${wijkName(over.id as WijkId)} is overvol: ${bezWord(over.m.bez).long.toLowerCase().replace('overvol: ', '')}. Dat merken bewoners en ondernemers meteen.`;
+  if (nextQ === GOAL.marathon.announceQuarter + 1) return 'De Marathon komt eraan. Wie dan extra handhaving wil inzetten, heeft de mensen nu nodig: aannemen duurt een kwartaal.';
+  return null;
+}
+
+// ---------------------------------------------------------------- dilemma + Moment copy
+export const DILEMMA = {
+  title: 'Een ondernemer vraagt gratis parkeren',
+  text: 'Een winkelier in het Centrum verbouwt een paar maanden. Hij vraagt of klanten rond zijn straat gratis mogen parkeren. “Anders blijft mijn winkel leeg.”',
+  options: {
+    ja: { label: 'Ja, gratis parkeren rond de winkelstraat', pros: 'Ondernemers zijn blij en er komen meer bezoekers.', cons: 'Je mist straatinkomsten in het Centrum en Klantcontact krijgt vragen van andere straten.', after: 'Je liet het gratis parkeren toe.' },
+    nee: { label: 'Nee, de regels gelden voor iedereen', pros: 'Het fonds blijft gezond en niemand krijgt een uitzondering.', cons: 'Ondernemers voelen zich niet gehoord en Backoffice krijgt bezwaren.', after: 'Je hield vast aan de regels.' },
+  } as Record<string, { label: string; pros: string; cons: string; after: string }>,
+  voices: { ondernemer: 'Mo, ondernemer', bewoner: 'Joke, bewoner', wethouder: 'De wethouder', bezoeker: 'Dennis, bezoeker', stad: 'Gerrit, buurtbewoner', fietser: 'Sanne, fietser' } as Record<string, string>,
+  react: {
+    ja: { ondernemer: 'Eindelijk iemand die meedenkt. Mijn klanten komen terug.', bewoner: 'Waarom hij wel en wij niet?', wethouder: 'Dit moet ik in de raad kunnen uitleggen.' },
+    nee: { ondernemer: 'Regels zijn regels, maar mijn winkel loopt leeg.', wethouder: 'Een consequent besluit. Dat kan ik uitleggen.', bewoner: 'Gelijke monniken, gelijke kappen.' },
+  } as Record<string, Record<string, string>>,
+};
+export const MOMENT = {
+  title: 'Marathon Rotterdam', announce: 'Over een kwartaal rent heel Rotterdam over de Coolsingel en de Erasmusbrug. De partners besluiten nog hoe de stad wordt afgesloten. Parkeren is volgend: jij bereidt voor met wat je hebt. Mensen die je nu aanneemt, staan er dan.',
+  picks: {
+    handhaving: { label: 'Extra handhaving', text: 'Overuren rond de route: minder foutparkeren, dus meer plek.', needs: 'Vraagt Handhaving.' },
+    evenementtarief: { label: 'Evenemententarief garages', text: 'Garages rekenen een toeslag: meer inkomsten, iets minder bezoekers.', needs: 'Geeft Klantcontact vragen.' },
+    pendel: { label: 'Pendel vanaf P+R', text: 'Bezoekers parkeren aan de rand en komen met de bus: minder auto’s in het Centrum.', needs: 'Geeft Klantcontact vragen.' },
+    brief: { label: 'Bewonersbrief', text: 'Bewoners weten wat er gebeurt en zetten hun auto vooraf in de garage.', needs: 'Geeft Klantcontact vragen.' },
+  } as Record<string, { label: string; text: string; needs: string }>,
+};
+/** Newspaper line for the Q4 afrekening: how the Marathon went for parking. */
+export function momentHeadline(res: QuarterResult): { title: string; sub: string; good: boolean } | null {
+  if (res.q !== GOAL.marathon.quarter) return null;
+  const search = res.next.history[res.next.history.length - 1].searchCentrum, good = search <= GOAL.marathon.maxSearch;
+  const picks = (res.moment ?? []).map((p) => MOMENT.picks[p].label.toLowerCase());
+  const via = picks.length ? ` Jouw maatregelen: ${picks.join(' en ')}.` : ' Je nam geen eigen maatregelen.';
+  return good
+    ? { title: 'Marathon rolt door, Centrum blijft bereikbaar', sub: `Zoeken duurde ${fmtMin(search)} (doel max ${GOAL.marathon.maxSearch}).${via}`, good }
+    : { title: 'Marathon-chaos: auto’s rijden rondjes in het Centrum', sub: `Zoeken duurde ${fmtMin(search)}, het doel was ${GOAL.marathon.maxSearch} minuten.${via}`, good };
 }
 
 // ---------------------------------------------------------------- end screen
@@ -123,8 +278,7 @@ export function headline(e: Ending, s: Session): { title: string; sub: string } 
 export function lessons(session: Session): string[] {
   const R = session.results, all: PlanItem[] = R.flatMap((r) => r.items), out: string[] = [];
   const built = (k: string) => all.filter((i) => i.kind === k);
-  const hired = (r: Role) => all.filter((i) => i.role === r).length;
-  const anyRed = R.some((r) => Object.values(r.levels).includes('rood'));
+  const hired = (r: string) => all.filter((i) => i.role === r).length;
   const garages = built('garage');
   if (garages.length && (hired('schoonmaker') === 0 || hired('monteur') === 0))
     out.push(`Je bouwde ${garages.length === 1 ? 'een garage' : `${garages.length} garages`}, maar nam ${hired('schoonmaker') === 0 ? 'geen schoonmaker' : 'geen monteur'} aan. Elke garage vraagt vaste mensen: bouwen is makkelijk, beheren is het vak.`);
@@ -138,7 +292,12 @@ export function lessons(session: Session): string[] {
     out.push(`Je zette het tarief in ${hoog.map((h) => wijkName(h.wijk as WijkId)).join(' en ')} op hoog. Dat verjaagt auto’s, maar ze zoeken ergens anders gratis parkeren${hoog.some((h) => h.wijk === 'centrum') && !k.paid ? ', bijvoorbeeld in Feijenoord' : ''}. En ondernemers merken het in hun omzet.`);
   }
   if (built('stalling').length === 0 && last.next.history[last.next.history.length - 1].bikeShort > 0.15) out.push('Je bouwde geen fietsenstalling, terwijl er flinke tekorten waren. Fietsers tellen mee voor een kwart van de Rotterdammert.');
-  if (anyRed) out.push('Minstens één team zat in het rood. Werkdruk loopt op voordat je het in de cijfers ziet; kijk er elk kwartaal naar.');
+  // the lesson about teams points at the team meters (teambalk) the player can see every quarter
+  const reds = R.flatMap((r) => TEAMS.filter((tm) => r.levels[tm] === 'rood').map((tm) => ({ q: r.q + 1, tm, load: r.loads[tm] })));
+  if (reds.length) {
+    const w = reds.sort((x, y) => y.load - x.load)[0];
+    out.push(`In de teambalk stond ${TEAM_INFO[w.tm].name} in kwartaal ${w.q} op rood (werkdruk ${w.load > 1.5 ? 'meer dan 150' : Math.round(w.load * 100)}%). Werk dat blijft liggen wordt een achterstand die doorlekt naar het volgende team. Kijk elk kwartaal naar de balken, voordat je bouwt of een tarief verandert.`);
+  } else if (R.length) out.push('Geen enkele balk in de teambalk kwam in het rood. Je nam mensen aan voordat het werk er was: dat levert de derde ster op.');
   const af = R.reduce((a, r) => a + r.money.afgeroomd, 0);
   if (af > 0.5e6) out.push(`Er vloeide ${fmtM(af)} terug naar de gemeente (onderuitputting). Geld dat je aan het jaareinde overhoudt, is weg. Gebruik je fonds dus op tijd.`);
   const chaos = last.next.history.find((h) => h.q === GOAL.marathon.quarter);

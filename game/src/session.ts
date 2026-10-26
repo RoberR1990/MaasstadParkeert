@@ -2,16 +2,18 @@
 // No DOM, no Three.js: everything the UI needs is returned as plain data.
 import baseConfig from '@data/config.json';
 import scenario from '@data/scenario-jaar1.json';
-import { createState, tick, staffNeeds, counts } from '@sim/model';
-import { buildConfig, explain, goalStatus, starsFor, teamLevel, teamLoads, type Cause, type GoalStatus, type TeamLevel } from '@sim/round';
+import { createState, tick, counts } from '@sim/model';
+import { compare, forecast, type Forecast } from '@sim/forecast';
+import { teamNeeds } from '@sim/teams';
+import { buildConfig, explain, goalStatus, starsFor, teamLevel, teamLoadsT, type Cause, type GoalStatus, type TeamLevel } from '@sim/round';
 import { PERSONAS } from '@sim/score';
-import type { Action, Config, GameState, Role, Tariff } from '@sim/types';
-import { ROLES } from '@sim/types';
+import type { Action, Config, GameState, HireRole, TeamId, Tariff } from '@sim/types';
+import { TEAMS, TEAM_ROLE } from '@sim/types';
 import type { WijkId } from './wijken';
 
 export type ItemKind = 'garage' | 'automaat' | 'scanauto' | 'stalling' | 'hire' | 'tariff' | 'intro';
 export interface PlanItem {
-  id: number; kind: ItemKind; action: Action; wijk?: WijkId; role?: Role; level?: Tariff; n?: number;
+  id: number; kind: ItemKind; action: Action; wijk?: WijkId; role?: HireRole; team?: TeamId; level?: Tariff; n?: number;
   /** paid now (capex) / running cost per year, in euro */
   cost: number; perYear: number;
   /** where it was placed on the diorama (build spots) */
@@ -30,7 +32,9 @@ export interface QuarterResult {
   money: MoneyLines;
   wijken: { id: WijkId; bezOld: number; bezNew: number; searchOld: number; searchNew: number; revenueNew: number }[];
   causes: Cause[];
-  loads: Record<Role, number>; levels: Record<Role, TeamLevel>;
+  loads: Record<TeamId, number>; levels: Record<TeamId, TeamLevel>;
+  /** what the player chose for the Moment (Q4) and the dilemma (Q2) in this quarter's plan */
+  moment: string[] | null; dilemma: string | null;
   items: PlanItem[];
   messages: string[];
   next: GameState; old: GameState;
@@ -43,12 +47,17 @@ export const GOAL = cfg.scenario.goal as {
   starsFondsOver: number; loadOrange: number; loadRed: number;
 };
 export const QUARTERS = 4;
-export const ROLE_TEAM: Record<Role, { team: string; short: string }> = {
-  handhaver: { team: 'Handhaving', short: 'handhavers' },
-  monteur: { team: 'Techniek', short: 'monteurs' },
-  schoonmaker: { team: 'Schoonmaak & Garagebeheer', short: 'schoonmakers' },
-  klantcontact: { team: 'Klantcontact', short: 'medewerkers' },
+export const TC = cfg.teams as {
+  backoffice: { salary: number };
+  moment: { id: string; quarter: number; maxPicks: number; partner: { garageReach: number; text: string }; picks: Record<string, { label: string; cost: number; load?: Partial<Record<TeamId, number>>; [k: string]: unknown }> };
+  dilemma: { id: string; quarter: number; duration: number; options: Record<string, { revMult?: Record<string, number>; persona?: Record<string, number>; load?: Partial<Record<TeamId, number>> }> };
 };
+/** numbers used only to explain things on screen (heat colours, complaint index, meter scale) */
+export const UI_CFG = (cfg.scenario.ui ?? {}) as { heat: { green: number; red: number }; meterMax: number; klachten: { perMinPerKResident: number; intro: number; hoog: number; floor: number } };
+export const salaryOf = (team: TeamId): number => { const r = TEAM_ROLE[team]; return r ? cfg.staff.salary[r] : TC.backoffice.salary; };
+export const hireRoleOf = (team: TeamId): HireRole => TEAM_ROLE[team] ?? 'backoffice';
+export interface TeamView { id: TeamId; fte: number; coming: number; need: number; demand: number; load: number; level: TeamLevel; parts: Record<string, number>; backlog: number }
+export interface WijkDetail { id: WijkId; bez: number; search: number; revenue: number; revenuePerYear: number; paid: boolean; tariff: Tariff; garages: number; naleving: number; introLeft: number; klachten: number; klachtenLevel: 'laag' | 'middel' | 'hoog'; overvolOneIn: number | null }
 
 /** how many units one placement builds (scenario: assets.<kind>.batch; automaten come in sets) */
 export const batchOf = (kind: string): number => (cfg.assets as unknown as Record<string, { batch?: number }>)[kind]?.batch ?? 1;
@@ -60,6 +69,9 @@ export class Session {
   shown: GameState;
   baseline: GameState;
   plan: PlanItem[] = [];
+  /** Moment picks (Q4) and dilemma answer (Q2) of the current plan; they travel with the plan as actions */
+  momentPicks: string[] = [];
+  dilemmaChoice: string | null = null;
   results: QuarterResult[] = [];
   redEver = false;
   private prev: GameState | null = null;
@@ -82,15 +94,62 @@ export class Session {
   get blijNow() { return this.shown.history[this.shown.history.length - 1].blij; }
 
   // ---------------------------------------------------------------- plan
-  actions(): Action[] { return this.plan.map((p) => p.action); }
+  actions(): Action[] {
+    const a = this.plan.map((p) => p.action);
+    if (this.isMomentQuarter() && this.momentPicks.length) a.push({ type: 'moment', id: TC.moment.id, picks: this.momentPicks });
+    if (this.dilemmaChoice && this.isDilemmaQuarter()) a.push({ type: 'dilemma', id: TC.dilemma.id, choice: this.dilemmaChoice });
+    return a;
+  }
+  /** marginal effect of toggling one Moment measure, on top of the rest of the plan and the other picks */
+  forecastPick(id: string): Forecast {
+    const base = this.plan.map((p) => p.action), mk = (picks: string[]): Action[] => (picks.length ? [{ type: 'moment', id: TC.moment.id, picks }] : []);
+    const cur = this.momentPicks, withP = cur.includes(id) ? cur.filter((p) => p !== id) : [...cur, id];
+    const k = 'pick' + this.key() + id;
+    let f = this.fcCache.get(k);
+    if (!f) { f = compare(this.state, [...base, ...mk(cur)], [...base, ...mk(withP)], cfg, TC.moment.picks ? 'centrum' : null); this.fcCache.set(k, f); }
+    return cur.includes(id) ? { ...f, searchOld: f.searchNew, searchNew: f.searchOld, blijOld: f.blijNew, blijNew: f.blijOld } : f;
+  }
+  /** the state one quarter after the plan (new hires have arrived, new assets generate work): this is what the team meters show */
+  upcoming(): GameState {
+    const k = this.key();
+    if (k !== this.cacheUpK || !this.cacheUp) { this.cacheUpK = k; this.cacheUp = tick(this.preview(), [], cfg); }
+    return this.cacheUp;
+  }
+  private cacheUpK = ''; private cacheUp: GameState | null = null;
+  /** team views as the player should read them while planning: people now (+coming), work and load after the plan has settled */
+  upcomingViews(): Record<TeamId, TeamView> {
+    const now = this.teamViews(this.state), up = this.upcoming(), out = {} as Record<TeamId, TeamView>;
+    for (const t of TEAMS) { const u = up.teams!.units[t]; out[t] = { ...now[t], demand: u.demand, load: u.load, level: teamLevel(u.load, cfg), parts: u.parts, backlog: u.achterstand }; }
+    return out;
+  }
+  isMomentQuarter() { return this.quarter === TC.moment.quarter; }
+  isDilemmaQuarter() { return this.quarter === TC.dilemma.quarter; }
+  momentCost() { return this.isMomentQuarter() ? this.momentPicks.reduce((a, p) => a + TC.moment.picks[p].cost, 0) : 0; }
+  setMomentPick(id: string, on: boolean): string | null {
+    const has = this.momentPicks.includes(id);
+    if (on && !has) {
+      if (this.momentPicks.length >= TC.moment.maxPicks) return `Je mag maximaal ${TC.moment.maxPicks} maatregelen kiezen.`;
+      if (this.state.fonds - this.planCapex() < TC.moment.picks[id].cost) return 'Daar is nu te weinig geld in het fonds voor.';
+      this.momentPicks.push(id);
+    } else if (!on && has) this.momentPicks = this.momentPicks.filter((p) => p !== id);
+    return null;
+  }
   private key() { return JSON.stringify(this.actions()) + this.quarter; }
+  private fcCache = new Map<string, Forecast>();
+  /** what one extra action would do on top of the current plan (pure look-ahead, cached) */
+  forecast(extra: Action[], wijk: WijkId | null = null): Forecast {
+    const k = this.key() + JSON.stringify(extra) + wijk;
+    let f = this.fcCache.get(k);
+    if (!f) { if (this.fcCache.size > 200) this.fcCache.clear(); f = forecast(this.state, this.actions(), extra, cfg, wijk); this.fcCache.set(k, f); }
+    return f;
+  }
   /** exactly what would happen if the player pressed "Volgend kwartaal" now (the sim is deterministic) */
   preview(): GameState {
     const k = this.key();
     if (k !== this.cachePlan || !this.cachePreview) { this.cachePlan = k; this.cachePreview = tick(this.state, this.actions(), cfg); }
     return this.cachePreview;
   }
-  planCapex() { return this.plan.reduce((a, p) => a + p.cost, 0); }
+  planCapex() { return this.plan.reduce((a, p) => a + p.cost, 0) + this.momentCost(); }
   planPerYear() { return this.plan.reduce((a, p) => a + p.perYear, 0); }
   fondsAfterPlan() { return this.state.fonds - this.planCapex(); }
 
@@ -118,7 +177,7 @@ export class Session {
     this.plan = kept;
     return gone;
   }
-  has(kind: ItemKind, wijk?: WijkId, role?: Role) { return this.plan.filter((p) => p.kind === kind && (!wijk || p.wijk === wijk) && (!role || p.role === role)).length; }
+  has(kind: ItemKind, wijk?: WijkId, role?: HireRole) { return this.plan.filter((p) => p.kind === kind && (!wijk || p.wijk === wijk) && (!role || p.role === role)).length; }
 
   // ---------------------------------------------------------------- build helpers
   buildItem(kind: 'garage' | 'automaat' | 'scanauto' | 'stalling', wijk: WijkId, lot?: { id: number; sub: number }): Omit<PlanItem, 'id'> {
@@ -126,7 +185,7 @@ export class Session {
     const action: Action = kind === 'scanauto' ? { type: 'build', asset: 'scanauto', count: 1 } : { type: 'build', asset: kind, wijk, count: n };
     return { kind, action, wijk, cost: a.capex * n, perYear: a.opex * n, lot, n };
   }
-  hireItem(role: Role): Omit<PlanItem, 'id'> { return { kind: 'hire', role, action: { type: 'hire', role, n: 1 }, cost: 0, perYear: cfg.staff.salary[role] }; }
+  hireItem(team: TeamId): Omit<PlanItem, 'id'> { const role = hireRoleOf(team); return { kind: 'hire', role, team, action: { type: 'hire', role, n: 1 }, cost: 0, perYear: salaryOf(team) }; }
   tariffItem(wijk: WijkId, level: Tariff, intro: boolean): Omit<PlanItem, 'id'> {
     return { kind: intro ? 'intro' : 'tariff', wijk, level, action: intro ? { type: 'introducePaid', wijk, level } : { type: 'setTariff', wijk, level }, cost: 0, perYear: 0 };
   }
@@ -140,11 +199,25 @@ export class Session {
     }
     return out;
   }
-  loads(s: GameState = this.state) { const l = teamLoads(s, cfg); return { loads: l, levels: Object.fromEntries(ROLES.map((r) => [r, teamLevel(l[r], cfg)])) as Record<Role, TeamLevel> }; }
-  /** FTE on the payroll, plus hires that are on their way */
-  staffInfo(role: Role) {
-    const s = this.state;
-    return { have: s.staff[role], coming: s.hiring.filter((h) => h.role === role).reduce((a, h) => a + h.n, 0) + this.plan.filter((p) => p.role === role).length, need: staffNeeds(s, cfg, true)[role] };
+  loads(s: GameState = this.state) { const l = teamLoadsT(s, cfg); return { loads: l, levels: Object.fromEntries(TEAMS.map((r) => [r, teamLevel(l[r], cfg)])) as Record<TeamId, TeamLevel> }; }
+  /** per team: people now, hires on their way (incl. this plan), steady need, and the load in the state `s` */
+  teamViews(s: GameState = this.state): Record<TeamId, TeamView> {
+    const need = teamNeeds(s, cfg, counts(s, true)), out = {} as Record<TeamId, TeamView>;
+    for (const t of TEAMS) {
+      const u = s.teams!.units[t], role = hireRoleOf(t);
+      const coming = s.hiring.filter((h) => h.role === role).reduce((a, h) => a + h.n, 0) + this.plan.filter((p) => p.role === role).length;
+      out[t] = { id: t, fte: u.fte, coming, need: need[t], demand: u.demand, load: u.load, level: teamLevel(u.load, cfg), parts: u.parts, backlog: u.achterstand };
+    }
+    return out;
+  }
+  wijkDetail(id: WijkId, s: GameState = this.shown): WijkDetail {
+    const w = s.wijken[id], k = UI_CFG.klachten;
+    const raw = Math.max(0, w.m.search - k.floor) * ((w.pop + w.newPop) / 1000) * k.perMinPerKResident + (w.introLeft > 0 ? k.intro : 0) + (w.paid && w.tariff === 'hoog' ? k.hoog : 0);
+    const klachten = Math.round(raw);
+    return {
+      id, bez: w.m.bez, search: w.m.search, revenue: w.m.revenue, revenuePerYear: w.m.revenue * 4, paid: w.paid, tariff: w.tariff, garages: w.garages.length, naleving: w.m.naleving, introLeft: w.introLeft,
+      klachten, klachtenLevel: klachten >= 40 ? 'hoog' : klachten >= 15 ? 'middel' : 'laag', overvolOneIn: w.m.bez > 1.005 ? Math.max(2, Math.round(w.m.bez / (w.m.bez - 1))) : null,
+    };
   }
   goal(): GoalStatus { return goalStatus(this.state, cfg, this.redEver); }
   /** news for the plan screen of the current quarter */
@@ -167,19 +240,19 @@ export class Session {
       capex, staff: r.staffCost, opex: r.opex, overhead: r.overhead, ovCost: r.costs - r.opex - r.staffCost - r.overhead, costs: r.costs,
       saldo: r.revenue - r.costs - capex, fondsOld: before.fonds, fondsNew: next.fonds, afgeroomd: next.afgeroomd - before.afgeroomd,
     };
-    const L = teamLoads(next, cfg);
-    const levels = Object.fromEntries(ROLES.map((x) => [x, teamLevel(L[x], cfg)])) as Record<Role, TeamLevel>;
-    if (ROLES.some((x) => levels[x] === 'rood')) this.redEver = true;
+    const L = teamLoadsT(next, cfg);
+    const levels = Object.fromEntries(TEAMS.map((x) => [x, teamLevel(L[x], cfg)])) as Record<TeamId, TeamLevel>;
+    if (TEAMS.some((x) => levels[x] === 'rood')) this.redEver = true;
     const res: QuarterResult = {
       q: before.quarter, year: this.year,
       blijOld: rOld.blij, blijNew: r.blij,
       personaOld: Object.fromEntries(PERSONAS.map((p) => [p, (rOld as any)[p]])), personaNew: Object.fromEntries(PERSONAS.map((p) => [p, (r as any)[p]])),
       money,
       wijken: (cfg.wijkOrder as WijkId[]).map((id) => ({ id, bezOld: old.wijken[id].m.bez, bezNew: next.wijken[id].m.bez, searchOld: old.wijken[id].m.search, searchNew: next.wijken[id].m.search, revenueNew: next.wijken[id].m.revenue })),
-      causes: explain(old, next, cfg, 3), loads: L, levels, items, messages: next.messages, next, old,
+      causes: explain(old, next, cfg, 3), loads: L, levels, moment: this.isMomentQuarter() ? [...this.momentPicks] : null, dilemma: this.dilemmaChoice, items, messages: next.messages, next, old,
     };
     this.prev = before;
-    this.state = next; this.shown = next; this.plan = [];
+    this.state = next; this.shown = next; this.plan = []; this.momentPicks = []; this.dilemmaChoice = null;
     this.results.push(res);
     this.cachePlan = '';
     return res;
