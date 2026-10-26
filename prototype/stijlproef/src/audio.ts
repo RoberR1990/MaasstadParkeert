@@ -16,6 +16,10 @@ export class AudioEngine {
   private cityGain!: GainNode;
   private trafficGain!: GainNode;
   private rainGain!: GainNode;
+  private crowdGain!: GainNode;
+  private crowdF!: BiquadFilterNode;
+  private crowd = 0;
+  private crowdSwell = 0;
   private noiseBuf!: AudioBuffer;
   private pressure = 0.5;
   private rain = 0;
@@ -29,9 +33,9 @@ export class AudioEngine {
   private timer: number | null = null;
   private lastTick = 0;
 
-  /** Must be called from a user gesture. */
+  /** Must be called from a user gesture (iOS: touchend/click). Safe to call repeatedly; resumes a suspended context. */
   start() {
-    if (this.started) { this.ctx?.resume(); return; }
+    if (this.started) { this.resume(); return; }
     const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AC) return;
     this.started = true;
@@ -79,11 +83,31 @@ export class AudioEngine {
     this.trafficGain = loopNoise('bandpass', 1100, 0.5).g;
     const rn = loopNoise('highpass', 1500, 0.4);
     this.rainGain = rn.g;
+    const cr = loopNoise('bandpass', 620, 0.9);
+    this.crowdGain = cr.g; this.crowdF = cr.f;
+    // slow formant-ish wobble makes the noise sound like a stadium crowd
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.35;
+    const lg = ctx.createGain(); lg.gain.value = 180; lfo.connect(lg).connect(cr.f.frequency); lfo.start();
 
     this.nextBeat = ctx.currentTime + 0.5;
     this.nextChord = ctx.currentTime + 0.2;
     this.timer = window.setInterval(() => this.schedule(), 90);
   }
+
+  /** iOS Safari suspends/interrupts the context; resume it and play one silent buffer inside the gesture. */
+  resume() {
+    const ctx = this.ctx; if (!ctx) return;
+    if (ctx.state !== 'running') {
+      ctx.resume().catch(() => {});
+      try { const b = ctx.createBuffer(1, 1, 22050); const src = ctx.createBufferSource(); src.buffer = b; src.connect(ctx.destination); src.start(0); } catch { /* noop */ }
+    }
+  }
+  /** 0..1 stadium crowd level (match day) */
+  setCrowd(level: number) { this.crowd = level; }
+  /** a short swelling cheer */
+  swell() { this.crowdSwell = 1; }
+  whistle() { this.tone('sine', 2900, 2900, 0.5, 0.05, 0, 0.3); this.tone('sine', 3050, 3050, 0.5, 0.04, 0.02, 0.3); }
+  roar() { this.tone('sawtooth', 130, 70, 0.7, 0.07, 0, 0.3); this.noiseBurst(0.6, 600, 200, 0.16, 0.8); this.tone('sawtooth', 150, 80, 0.6, 0.06, 0.25, 0.3); }
 
   setMuted(m: boolean) {
     this.muted = m;
@@ -199,6 +223,9 @@ export class AudioEngine {
     this.cityGain.gain.setTargetAtTime((0.05 + 0.2 * p) * (1 - this.rain * 0.3), now, 0.5);
     this.trafficGain.gain.setTargetAtTime(0.004 + 0.032 * p * p, now, 0.5);
     this.rainGain.gain.setTargetAtTime(this.rain * 0.075, now, 0.8);
+    this.crowdSwell = Math.max(0, this.crowdSwell - 0.09 / 3);
+    this.crowdGain.gain.setTargetAtTime(this.crowd * 0.12 + this.crowdSwell * 0.2, now, 0.35);
+    this.crowdF.frequency.setTargetAtTime(520 + this.crowd * 420 + this.crowdSwell * 500, now, 0.5);
     // random events
     if (now > this.nextHorn) { this.horn(); this.nextHorn = now + 45 + Math.random() * 45; }
     if (now > this.nextGull) {

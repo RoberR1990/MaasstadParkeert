@@ -59,9 +59,12 @@ export class Environment {
   skyTop!: THREE.Color;
   skyHor!: THREE.Color;
 
+  renderer: THREE.WebGLRenderer;
+
   constructor(scene: THREE.Scene, renderer: THREE.WebGLRenderer) {
     this.scene = scene;
-    this.fog = new THREE.FogExp2('#e8e4d8', 0.0017);
+    this.renderer = renderer;
+    this.fog = new THREE.FogExp2('#e8e4d8', 0.0008);
     scene.fog = this.fog;
 
     this.sun = new THREE.DirectionalLight('#fff0d8', 3);
@@ -89,7 +92,7 @@ export class Environment {
       vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0);} ',
       fragmentShader: `varying vec3 vD; void main(){ float t = vD.y; vec3 top = vec3(0.55,0.72,0.95); vec3 hor = vec3(1.0,0.93,0.82); vec3 bot = vec3(0.35,0.3,0.26);
         vec3 c = t>0.0 ? mix(hor, top, pow(t,0.6)) : mix(hor, bot, pow(-t,0.5));
-        c += vec3(1.0,0.9,0.7) * pow(max(dot(normalize(vD), normalize(vec3(0.5,0.6,0.4))),0.0), 40.0) * 3.0;
+        c += vec3(1.0,0.9,0.7) * pow(max(dot(normalize(vD), normalize(vec3(0.5,0.6,0.4))),0.0), 4.0) * 0.35;
         gl_FragColor = vec4(c,1.0);} `,
     });
     envScene.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), envMat));
@@ -171,12 +174,38 @@ export class Environment {
     scene.add(this.rainMesh);
   }
 
+  /** Bake a sky-ish environment from a fragment shader body (vD = view direction) for mirror materials. */
+  bakeEnv(body: string): THREE.Texture {
+    const pm = new THREE.PMREMGenerator(this.renderer);
+    const sc = new THREE.Scene();
+    const mat = new THREE.ShaderMaterial({
+      side: THREE.BackSide,
+      vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0);} ',
+      fragmentShader: `varying vec3 vD; ${body}`,
+    });
+    sc.add(new THREE.Mesh(new THREE.SphereGeometry(50, 48, 24), mat));
+    const t = pm.fromScene(sc, 0.01).texture;
+    pm.dispose();
+    return t;
+  }
+
   private sample(h: number) {
     let i = 0;
     while (i < KEYS_C.length - 2 && h >= KEYS_C[i + 1].h) i++;
     const a = KEYS_C[i], b = KEYS_C[i + 1];
     const t = smoothstep(0, 1, (h - a.h) / (b.h - a.h));
     return { a, b, t };
+  }
+
+  /** Fit the sun's shadow frustum around what the camera looks at (crisper shadows when zoomed in). */
+  setShadowFocus(x: number, z: number, half: number) {
+    const size = this.sun.shadow.mapSize.x;
+    const texel = (2 * half) / size;
+    this.target.set(Math.round(x / texel) * texel, 0, Math.round(z / texel) * texel);
+    this.sun.target.position.copy(this.target);
+    this.sun.shadow.normalBias = Math.min(0.4, Math.max(0.05, texel * 2.6));
+    const c = this.sun.shadow.camera;
+    if (Math.abs(c.right - half) > 0.5) { c.left = -half; c.right = half; c.top = half; c.bottom = -half; c.far = 400; c.updateProjectionMatrix(); }
   }
 
   update(dt: number, time: number) {
@@ -219,7 +248,7 @@ export class Environment {
     top.lerpColors(a.c.bt, b.c.bt, t).lerp(grey, rain * 0.7);
     hor.lerpColors(a.c.bh, b.c.bh, t).lerp(greyH, rain * 0.7);
     (this.fog.color as THREE.Color).lerpColors(a.c.fog, b.c.fog, t).lerp(greyH, rain * 0.5);
-    this.fog.density = 0.0017 + rain * 0.0007;
+    this.fog.density = 0.0008 + rain * 0.0005;
     this.scene.environmentIntensity = L('envI') * (1 + rain * 0.35);
     this.bloom = L('bloom') * (1 + rain * 0.2);
     this.bloomThreshold = L('bloomT');

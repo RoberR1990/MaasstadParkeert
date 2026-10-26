@@ -1,5 +1,6 @@
-// HTML/CSS overlay: fonds, kwartaal, Blije Rotterdammer (SVG face), meters, toolbar, tooltips, floating text.
+// HTML/CSS overlay: fonds, kwartaal, Rotterdammert centraal (SVG character), meters, toolbar, events, tooltips, floating text.
 import { icon } from './icons';
+import { ROTTERDAMMERT_SVG } from './avatar';
 import { TOOLS, ToolId } from './structures';
 import { clamp, damp, lerp } from './util';
 
@@ -29,6 +30,10 @@ export class Hud {
   onRain: () => void = () => {};
   onMute: () => void = () => {};
   onSound: (kind: 'click' | 'tick' | 'slider', v?: number) => void = () => {};
+  onEvent: (id: 'wedstrijd' | 'gorilla' | null) => void = () => {};
+  onLabels: () => void = () => {};
+  private sayT = 0; private sayLast = '';
+  private eventOn = false;
 
   private fondsShown = 120;
   private fondsAnim: number | null = null;
@@ -56,6 +61,25 @@ export class Hud {
     $('btn-mute').innerHTML = icon('volume');
     $('clock-pp').innerHTML = icon('pause');
     $('clock-ico').innerHTML = icon('sun');
+    $('face-wrap').innerHTML = ROTTERDAMMERT_SVG;
+    $('btn-event').innerHTML = icon('flag');
+    $('btn-labels').innerHTML = icon('tag');
+    $('btn-pressure').innerHTML = icon('sliders');
+    $('sheet-x').innerHTML = icon('close');
+    $('banner-x').innerHTML = icon('close');
+    $('ev-ico1').innerHTML = icon('city');
+    $('ev-ico2').innerHTML = icon('search');
+    $('face-wrap').addEventListener('click', () => { if (matchMedia('(max-width: 700px)').matches) { $('topright').classList.toggle('open'); this.onSound('click'); } });
+    $('btn-pressure').addEventListener('click', () => { $('pressure').classList.add('open'); this.onSound('click'); });
+    $('sheet-x').addEventListener('click', () => { $('pressure').classList.remove('open'); this.onSound('click'); });
+    $('btn-labels').addEventListener('click', () => { this.onSound('click'); this.onLabels(); });
+    $('btn-event').addEventListener('click', () => {
+      this.onSound('click');
+      if (this.eventOn) { this.onEvent(null); return; }
+      $('event-menu').classList.toggle('hidden');
+    });
+    for (const b of document.querySelectorAll<HTMLElement>('.ev')) b.addEventListener('click', () => { this.onSound('click'); $('event-menu').classList.add('hidden'); this.onEvent(b.dataset.ev as 'wedstrijd' | 'gorilla'); });
+    $('banner-x').addEventListener('click', () => { this.onSound('click'); this.onEvent(null); });
 
     // meters
     const m = $('meters');
@@ -75,7 +99,7 @@ export class Hud {
       b.className = 'tool';
       b.dataset.tool = t.id;
       b.dataset.tip = `${t.label}|${t.blurb}`;
-      b.innerHTML = `<span class="t-key">${t.key}</span><span class="t-ico">${icon(t.id)}</span><span class="t-name">${t.label}</span><span class="t-cost">${icon('coin')}${t.costLabel}</span>`;
+      b.innerHTML = `<span class="t-key">${t.key}</span><span class="t-ico">${icon(t.id)}</span><span class="t-name"><span class="long">${t.label}</span><span class="short">${t.short}</span></span><span class="t-cost">${icon('coin')}${t.costLabel}</span>`;
       b.addEventListener('click', () => { this.onSound('click'); this.onTool(b.classList.contains('selected') ? null : t.id); });
       b.addEventListener('pointerenter', () => this.onSound('tick'));
       tb.appendChild(b);
@@ -162,7 +186,7 @@ export class Hud {
   setPressureUi(p: number, searching: number, minutes: number, occ: number) {
     const pct = Math.round(p * 100);
     $('p-val').textContent = `${pct}%`;
-    $('p-val').style.background = mix3('#5fb596', '#e8b43e', '#e2735a', p);
+    $('p-val').style.background = mix3('#00811f', '#e8b43e', '#e2735a', p);
     ($('p-range') as HTMLInputElement).value = String(pct);
     const s = $('s-search');
     if (s.textContent !== String(searching)) { s.textContent = String(searching); s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop'); }
@@ -183,6 +207,30 @@ export class Hud {
     if (pp.dataset.i !== k) { pp.innerHTML = icon(k); pp.dataset.i = k; }
   }
 
+  setLabels(on: boolean) { $('btn-labels').classList.toggle('on', on); }
+  setEventActive(on: boolean) {
+    this.eventOn = on;
+    $('btn-event').classList.toggle('live', on);
+    $('btn-event').innerHTML = icon(on ? 'close' : 'flag');
+    if (on) $('event-menu').classList.add('hidden');
+  }
+  banner(title: string, sub: string, alert = false) {
+    const b = $('banner');
+    b.classList.remove('hidden'); b.classList.toggle('alert', alert);
+    b.style.animation = 'none'; void b.offsetWidth; b.style.animation = '';
+    $('banner-title').textContent = title; $('banner-sub').textContent = sub; $('banner-count').textContent = '';
+  }
+  bannerCount(t: string) { $('banner-count').textContent = t; }
+  bannerSub(t: string) { $('banner-sub').textContent = t; }
+  clearBanner() { $('banner').classList.add('hidden'); }
+  toast(text: string, small = '', ms = 5200) {
+    const el = $('toast');
+    el.innerHTML = `${text}${small ? `<small>${small}</small>` : ''}`;
+    el.classList.remove('hidden', 'out');
+    el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+    window.setTimeout(() => el.classList.add('out'), ms);
+    window.setTimeout(() => el.classList.add('hidden'), ms + 900);
+  }
   setRain(on: boolean) { $('btn-rain').classList.toggle('on', on); }
   setMute(m: boolean) { $('btn-mute').innerHTML = icon(m ? 'mute' : 'volume'); $('btn-mute').classList.toggle('off', m); }
 
@@ -221,11 +269,19 @@ export class Hud {
     for (const e of this.personaEls.values()) {
       e.cur = damp(e.cur, e.val, 3, dt);
       e.bar.style.width = `${clamp(e.cur, 3, 100)}%`;
-      e.bar.style.background = mix3('#e2735a', '#f0c24a', '#5fb596', clamp(e.cur / 100));
+      e.bar.style.background = mix3('#e2735a', '#f0c24a', '#00811f', clamp(e.cur / 100));
     }
     const happy = (1 - m) * 100;
     $('mood-num').textContent = String(Math.round(happy));
     $('mood-word').textContent = happy > 78 ? 'Dolblij' : happy > 62 ? 'Tevreden' : happy > 46 ? 'Twijfelend' : happy > 30 ? 'Chagrijnig' : 'Woedend';
+    this.sayT -= dt;
+    if (this.sayT <= 0) {
+      this.sayT = 6.5;
+      const set = happy > 76 ? SAY.happy : happy > 60 ? SAY.good : happy > 44 ? SAY.mid : happy > 28 ? SAY.bad : SAY.mad;
+      let line = set[Math.floor(Math.random() * set.length)];
+      if (line === this.sayLast) line = set[(set.indexOf(line) + 1) % set.length];
+      if (line !== this.sayLast) { this.sayLast = line; $('say-text').textContent = line; const sy = $('say'); sy.classList.remove('swap'); void sy.offsetWidth; sy.classList.add('swap'); }
+    }
     this.drawFace(m, dt, lookX, lookY);
   }
 
@@ -234,39 +290,30 @@ export class Hud {
       const el = document.getElementById(id);
       if (el) for (const k in attrs) el.setAttribute(k, String(attrs[k]));
     };
-    // colours
-    const c0 = mix3('#ffe796', '#ffd48a', '#ffb394', m);
-    const c1 = mix3('#f2b544', '#f1a047', '#e2644a', m);
-    set('fg0', { 'stop-color': c0 });
-    set('fg1', { 'stop-color': c1 });
-    const ringCol = mix3('#5fb596', '#f0c24a', '#e2735a', m);
-    set('ring', { stroke: ringCol, 'stroke-dasharray': `${clamp(this.happyNow, 2, 100)} 100` });
+    set('ring', { stroke: mix3('#00811f', '#f0c24a', '#e2735a', m), 'stroke-dasharray': `${clamp(this.happyNow, 2, 100)} 100` });
+    set('rcBg', { fill: mix3('#cfe6d6', '#f1e3c4', '#f3cfc2', m) });
     // mouth: smile -> flat -> frown
-    const yEnd = lerp(61, 73, m);
-    const yCtl = lerp(84, 54, m);
-    const x0 = lerp(31, 35, m), x1 = 100 - x0;
+    const yEnd = lerp(63, 71, m), yCtl = lerp(76, 57, m), x0 = lerp(40.5, 42, m), x1 = 100 - x0;
     const d = `M${x0} ${yEnd} Q50 ${yCtl} ${x1} ${yEnd}`;
-    set('mouth', { d, 'stroke-width': lerp(5, 5.5, m) });
-    const open = clamp(1 - m / 0.4);
-    set('mouthFill', { d: `${d} Z`, opacity: open * 0.95 });
+    set('mouth', { d });
+    set('mouthFill', { d: `${d} Z`, opacity: clamp(1 - m / 0.4) * 0.95 });
     // brows
     const mm2 = Math.pow(m, 1.7);
-    const bo = lerp(33, 31, mm2), bi = lerp(31, 41, mm2);
-    set('browL', { x1: 25, y1: bo - lerp(1, 0, m), x2: 44, y2: bi });
-    set('browR', { x1: 75, y1: bo - lerp(1, 0, m), x2: 56, y2: bi });
+    const bo = lerp(41.2, 38.5, mm2), bi = lerp(40.4, 45, mm2);
+    set('browL', { x1: 32.5, y1: bo, x2: 46.5, y2: bi });
+    set('browR', { x1: 67.5, y1: bo, x2: 53.5, y2: bi });
     // eyes + lids
-    const lid = lerp(0, 8.5, clamp((m - 0.4) / 0.6));
+    const lid = lerp(0, 6, clamp((m - 0.4) / 0.6));
     this.blink -= dt;
     if (this.blink < -3.6 + Math.sin(this.t) * 0.5) this.blink = 0.12;
-    const blinkH = this.blink > 0 ? 20 : 0;
-    const L = Math.max(lid, blinkH);
-    set('lidL', { y: 36.6 - 0.2, height: L, transform: `rotate(${lerp(0, 16, m)} 36 46)` });
-    set('lidR', { y: 36.6 - 0.2, height: L, transform: `rotate(${-lerp(0, 16, m)} 64 46)` });
-    const px = clamp(lookX, -1, 1) * 2.4, py = clamp(lookY, -1, 1) * 2.0;
-    set('pupL', { cx: 37 + px, cy: 47 + py + m * 1.5, r: lerp(4.6, 3.9, m) });
-    set('pupR', { cx: 63 + px, cy: 47 + py + m * 1.5, r: lerp(4.6, 3.9, m) });
-    set('cheekL', { opacity: lerp(0.62, 0.15, m) });
-    set('cheekR', { opacity: lerp(0.62, 0.15, m) });
+    const L = Math.max(lid, this.blink > 0 ? 13 : 0);
+    set('lidL', { height: L, transform: `rotate(${lerp(0, 14, m)} 40 50)` });
+    set('lidR', { height: L, transform: `rotate(${-lerp(0, 14, m)} 60 50)` });
+    const px = clamp(lookX, -1, 1) * 1.8, py = clamp(lookY, -1, 1) * 1.4;
+    set('pupL', { cx: 40.6 + px, cy: 50.6 + py + m * 1.2, r: lerp(3.2, 2.8, m) });
+    set('pupR', { cx: 59.4 + px, cy: 50.6 + py + m * 1.2, r: lerp(3.2, 2.8, m) });
+    set('cheekL', { opacity: lerp(0.6, 0.12, m) });
+    set('cheekR', { opacity: lerp(0.6, 0.12, m) });
     set('sweat', { opacity: clamp((m - 0.38) * 4) * (1 - clamp((m - 0.75) * 4)) * 0.95 });
     set('steam', { opacity: clamp((m - 0.78) * 5) * (0.6 + 0.4 * Math.sin(this.t * 6)) });
     const face = document.getElementById('face')!;
@@ -274,3 +321,11 @@ export class Hud {
     face.classList.toggle('bounce', m <= 0.82);
   }
 }
+
+const SAY = {
+  happy: ['Lekker hoor, meteen een plekkie!', 'Staat-ie! Zo doen we dat in Rotterdam.', 'Geen gezeur, gewoon parkeren. Heerlijk.'],
+  good: ['Gaat prima, hoor. Kan niet klagen.', 'Even doorrijden, dan heb ik \u2019m wel.', 'Mooi, mooi. Zo houden we het.'],
+  mid: ['Nou, effe zoeken\u2026', 'Straks maar te voet, volgens mij.', 'Dit wordt nog even rondjes draaien.'],
+  bad: ['Ik draai al twintig minuten rondjes, hoor!', 'Weer bezet. Echt waar?', 'Doe mij maar een plekkie, graag!'],
+  mad: ['Dit meen je toch niet?!', 'Ik sta zo in de krant, wacht maar!', 'Ik zoek me suf. Wie regelt dit?!'],
+};

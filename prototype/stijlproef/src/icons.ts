@@ -28,6 +28,10 @@ const ICONS: Record<string, string> = {
   chevron: `<path d="M9 5.5l6.5 6.5L9 18.5"/>`,
   sparkle: `<path d="M12 3.5l1.7 5.1 5.1 1.7-5.1 1.7L12 17l-1.7-5-5.1-1.7 5.1-1.7z" ${T}/>`,
   target: `<circle cx="12" cy="12" r="8.4" ${T}/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="1" fill="currentColor"/>`,
+  flag: `<path d="M5.5 21V4.2"/><path d="M5.5 5.2c3.4-2 5.6 1.8 9 0 1.6-.8 3-.8 4.2-.3v8c-1.2-.5-2.6-.5-4.2.3-3.4 1.8-5.6-2-9 0z" ${T}/>`,
+  tag: `<path d="M3.6 12.2V4.6a1 1 0 0 1 1-1h7.6l8.2 8.2a1.4 1.4 0 0 1 0 2l-6.6 6.6a1.4 1.4 0 0 1-2 0z" ${T}/><circle cx="8.4" cy="8.4" r="1.4" fill="currentColor"/>`,
+  sliders: `<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.1" ${T}/><circle cx="9" cy="17" r="2.1" ${T}/>`,
+  chat: `<path d="M4.2 6.6a2.4 2.4 0 0 1 2.4-2.4h10.8a2.4 2.4 0 0 1 2.4 2.4v7.2a2.4 2.4 0 0 1-2.4 2.4H11l-4.2 3.6v-3.6a2.4 2.4 0 0 1-2.6-2.4z" ${T}/>`,
   rotate: `<path d="M19.6 12a7.6 7.6 0 1 1-2.5-5.6"/><path d="M19.8 4.6v4.4h-4.4"/>`,
 };
 

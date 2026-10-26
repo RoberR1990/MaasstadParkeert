@@ -2,8 +2,8 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Maasstad Parkeert – stijlproef</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+<title>Maasstad Parkeert</title>
 <meta name="description" content="Stijlproef: Maasstad Parkeert als 3D-diorama." />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%232f6f7e'/%3E%3Ctext x='16' y='23' font-size='20' font-family='sans-serif' font-weight='700' text-anchor='middle' fill='%23fff6e4'%3EP%3C/text%3E%3C/svg%3E" />
 </head>
@@ -30,46 +30,23 @@
     </div>
   </div>
 
-  <!-- top-right: Blije Rotterdammer -->
-  <div id="topright" class="panel mood" data-tip="De Blije Rotterdammer|Het gemiddelde van zes groepen. Als zoeken lang duurt, wordt hij chagrijnig.">
-    <div class="face-wrap">
-      <svg id="face" viewBox="0 0 100 100" aria-label="De Blije Rotterdammer">
-        <defs>
-          <clipPath id="clipL"><ellipse id="clipLe" cx="36" cy="46" rx="8.2" ry="9.4"/></clipPath>
-          <clipPath id="clipR"><ellipse id="clipRe" cx="64" cy="46" rx="8.2" ry="9.4"/></clipPath>
-          <radialGradient id="faceGrad" gradientUnits="userSpaceOnUse" cx="36" cy="30" r="78">
-            <stop offset="0%" id="fg0" stop-color="#ffe08a"/><stop offset="100%" id="fg1" stop-color="#f2b544"/>
-          </radialGradient>
-        </defs>
-        <circle cx="50" cy="52" r="42" fill="rgba(30,45,60,.18)" transform="translate(0,3)"/>
-        <circle id="ring" cx="50" cy="50" r="46" fill="none" stroke="#62b79a" stroke-width="4.5" stroke-linecap="round" pathLength="100" stroke-dasharray="100 100" transform="rotate(-90 50 50)" opacity=".95"/>
-        <circle id="faceBase" cx="50" cy="50" r="40" fill="url(#faceGrad)"/>
-        <ellipse cx="34" cy="31" rx="14" ry="8" fill="#fff" opacity=".28" transform="rotate(-24 34 31)"/>
-        <ellipse id="cheekL" cx="27" cy="58" rx="7" ry="4.6" fill="#ee7b6b" opacity=".5"/>
-        <ellipse id="cheekR" cx="73" cy="58" rx="7" ry="4.6" fill="#ee7b6b" opacity=".5"/>
-        <g id="eyeL"><ellipse cx="36" cy="46" rx="8.2" ry="9.4" fill="#fffaf0"/><circle id="pupL" cx="37" cy="47" r="4.6" fill="#2a3a4a"/><circle cx="38.6" cy="44.8" r="1.6" fill="#fff"/></g>
-        <g id="eyeR"><ellipse cx="64" cy="46" rx="8.2" ry="9.4" fill="#fffaf0"/><circle id="pupR" cx="63" cy="47" r="4.6" fill="#2a3a4a"/><circle cx="64.6" cy="44.8" r="1.6" fill="#fff"/></g>
-        <g clip-path="url(#clipL)"><rect id="lidL" x="24" y="30" width="24" height="0" fill="url(#faceGrad)"/></g>
-        <g clip-path="url(#clipR)"><rect id="lidR" x="52" y="30" width="24" height="0" fill="url(#faceGrad)"/></g>
-        <line id="browL" x1="24" y1="33" x2="44" y2="33" stroke="#4a3a2e" stroke-width="4.2" stroke-linecap="round"/>
-        <line id="browR" x1="56" y1="33" x2="76" y2="33" stroke="#4a3a2e" stroke-width="4.2" stroke-linecap="round"/>
-        <path id="mouthFill" d="" fill="#7a3a3c" opacity="0"/>
-        <path id="mouth" d="M32 64 Q50 80 68 64" fill="none" stroke="#4a3a2e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path id="sweat" d="M80 24 q5 8 0 11 q-5 -3 0 -11z" fill="#8fd0e8" opacity="0"/>
-        <g id="steam" opacity="0"><circle cx="22" cy="20" r="3.4" fill="#fff" opacity=".8"/><circle cx="16" cy="12" r="2.4" fill="#fff" opacity=".6"/><circle cx="80" cy="18" r="3.4" fill="#fff" opacity=".8"/></g>
-        <!-- little bucket hat -->
-        <path d="M24 22 Q50 -2 76 22 Q50 14 24 22z" fill="#2f6f7e"/><rect x="26" y="19" width="48" height="4" rx="2" fill="#fff6e4" opacity=".9"/>
-      </svg>
-    </div>
+  <!-- top-right: Rotterdammert centraal -->
+  <div id="topright" class="panel mood" data-tip="Rotterdammert centraal|Het gemiddelde van zes groepen. Als zoeken lang duurt, wordt de Rotterdammert chagrijnig.">
+    <button class="face-wrap" id="face-wrap" aria-label="Rotterdammert centraal: tik om uit te klappen"></button>
     <div class="mood-main">
-      <div class="mood-head"><span class="lbl">Blije Rotterdammer</span></div>
-      <div class="mood-score"><span class="num big" id="mood-num">72</span><span class="mood-word" id="mood-word">Tevreden</span></div>
+      <div class="mood-head"><span class="lbl">Rotterdammert centraal</span></div>
+      <div class="mood-score"><span class="num big" id="mood-num">72</span><span class="mood-unit">Rotterdammert-score</span><span class="mood-word" id="mood-word">Tevreden</span></div>
+      <div class="say" id="say"><span id="say-text">Nou, effe zoeken…</span></div>
       <div class="meters" id="meters"></div>
     </div>
   </div>
 
+  <!-- top-center: event banner -->
+  <div id="banner" class="banner hidden"><div class="b-main"><b id="banner-title"></b><span id="banner-sub"></span></div><div class="b-count" id="banner-count"></div><button class="b-x" id="banner-x" aria-label="Stop evenement"></button></div>
+
   <!-- bottom-left: parkeerdruk -->
   <div id="pressure" class="panel pressure">
+    <button class="sheet-x" id="sheet-x" aria-label="Sluiten"></button>
     <div class="p-head">
       <span class="p-ico" id="p-ico"></span>
       <span class="lbl">Parkeerdruk</span>
@@ -89,18 +66,28 @@
   <!-- bottom-center: toolbar -->
   <div id="toolbar" class="panel toolbar" role="toolbar" aria-label="Bouwen"></div>
 
-  <!-- bottom-right: time / weather / sound -->
+  <!-- bottom-right: time / weather / sound / events -->
   <div id="sys" class="cluster sys">
+    <button class="panel round only-mobile" id="btn-pressure" data-tip="Parkeerdruk|Open de schuif voor parkeerdruk." aria-label="Parkeerdruk"></button>
     <div class="panel pill clock" id="clock" data-tip="Dag en nacht|Klik om de tijd te pauzeren of te laten lopen.">
       <span id="clock-ico"></span>
       <span class="num sm" id="clock-time">10:00</span>
       <span class="pp" id="clock-pp"></span>
     </div>
+    <button class="panel round" id="btn-labels" data-tip="Namen|Toon de namen van alle bekende plekken. Tik of wijs een plek aan voor uitleg." aria-label="Namen tonen"></button>
+    <button class="panel round" id="btn-event" data-tip="Evenement|Start een wedstrijddag of een ontsnapt dier." aria-label="Evenement"></button>
     <button class="panel round" id="btn-rain" data-tip="Regen|Zet een bui aan of uit." aria-label="Regen"></button>
     <button class="panel round" id="btn-mute" data-tip="Geluid|Geluid aan of uit (M)." aria-label="Geluid"></button>
   </div>
+  <div id="event-menu" class="panel event-menu hidden">
+    <button class="ev" data-ev="wedstrijd"><span class="ev-ico" id="ev-ico1"></span><span><b>Wedstrijddag in De Kuip</b><i>Drukte, fluitjes, vuurwerk van lampen</i></span></button>
+    <button class="ev" data-ev="gorilla"><span class="ev-ico" id="ev-ico2"></span><span><b>Bokito ontsnapt!</b><i>Een aap op straat. Rij voorzichtig.</i></span></button>
+  </div>
 
   <div id="hint" class="hint hidden"></div>
+  <div id="labels" class="labels"></div>
+  <div id="toast" class="toast hidden"></div>
+  <div id="cardlayer" class="cardlayer"></div>
   <div id="floaters"></div>
 </div>
 
@@ -126,10 +113,11 @@
     <div class="title-badge" id="title-badge"></div>
     <h1><span class="t1">Maasstad</span><span class="t2">Parkeert</span></h1>
     <p class="tagline">Bouwen is makkelijk. Beheren is het vak.</p>
+    <p class="slogan">Steden schuilen niet wanneer het regent.</p>
   </div>
   <div class="title-foot">
     <button class="btn play" id="btn-play"><span id="play-ico"></span><span>Spelen</span></button>
-    <p class="fine">Een serious game voor Parkeren &amp; Stadsbeheer · stijlproef</p>
+    <p class="fine">Een serious game voor Parkeren &amp; Stadsbeheer · stijlproef ronde 2</p>
   </div>
 </div>
 
