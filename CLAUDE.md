@@ -11,7 +11,8 @@ Serious game (SimCity-stijl, 3D low-poly miniatuurstad) voor collega's Parkeren/
 - Na elke wijziging in `src/sim/` of `data/`: `npm run sim` en check dat de doelen in `docs/BALANS.md` nog gehaald worden.
 - Visuele lat: professioneel indiespel. Elke visuele wijziging verifiëren met Playwright-screenshots en kritisch bekijken.
 - Code en comments Engels, speltekst Nederlands.
-- Easter eggs = badges, nooit punten. Geen echte logo's, clubnamen, songteksten of nagetekende kunstwerken.
+- Easter eggs = badges, nooit punten. Geen echte logo's, songteksten of nagetekende kunstwerken. Echte plekken/gebouwen mogen gestileerd; "Feyenoord" alleen als naam in tekst (zie ONTWERP §8b).
+- Terminologie: "Rotterdammert" (met t) = de centrale bewoner/score.
 
 ## Fasen
 1. Ontwerp + eerste rekenmodel — klaar

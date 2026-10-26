@@ -5,7 +5,7 @@ Status: concept v0.1 · eigenaar: Robert Riteco (Stadsbeheer, Parkeren) · alle 
 ## 1. Kern
 
 **"Bouwen is makkelijk, beheren is het vak."**
-Je beheert 10 jaar (2026–2036) de parkeervoorzieningen van Maasstad: herkenbaar Rotterdam, maar verzonnen. Alles wat je bouwt kost daarna elk jaar geld en mensen. Wie bouwt zonder te beheren, scoort hoog in jaar 3 en zakt in jaar 7 in.
+Je beheert 10 jaar (2026–2036) de parkeervoorzieningen van Rotterdam ("de Maasstad"): echte wijken en iconen als speelgoedmaquette, maar met fictieve getallen. Alles wat je bouwt kost daarna elk jaar geld en mensen. Wie bouwt zonder te beheren, scoort hoog in jaar 3 en zakt in jaar 7 in.
 
 - Doelgroep: collega's Parkeren / Stadsbeheer.
 - Speelduur: ~15 min. 1 jaar ≈ 90 s, 40 kwartalen, pauze altijd mogelijk.
@@ -23,21 +23,25 @@ Elk 4e kwartaal: begrotingsmoment (jaarbudget erbij, kort jaaroverzicht).
 Na kwartaal 40: eindscore + nabespreking ("wat heb je geleerd").
 ```
 
-## 3. De stad: 9 wijken
+## 3. De stad: 9 gebieden (echt Rotterdam, samengedrukt als toeristische plattegrond)
 
-| id | naam (fictief) | lijkt op | karakter | startsituatie |
+Herkenbaarheid is het primaire doel: een collega moet direct zeggen "dat is Rotterdam!". Gebieden en iconen zijn echt; aantallen, budgetten en startsituaties zijn fictief (staat in het intro- en eindscherm).
+
+| id | naam in spel | iconen op de kaart | karakter | startsituatie |
 |---|---|---|---|---|
-| centrum | Binnenstad | Centrum/Coolsingel | winkels, bezoekers, hoge druk | betaald, hoog tarief, 2 garages |
-| kopbrug | Kop van de Brug | Kop van Zuid | torens, kantoren | betaald, 1 garage |
-| havenkwartier | Merwehaven | M4H | leeg haventerrein, **groeit hard vanaf jaar 2** | niet betaald |
-| oudwest | Oud-West | Oude Westen/Delfshaven | dicht, vooroorlogs, veel fietsen | betaald, vergunningen vol |
-| noord | Bergkade | Noord/Blijdorp | gemengd wonen | deels betaald |
-| plaswijk | Plaswijk | Kralingen | ruim, studenten | niet betaald |
-| pleinzuid | Pleinzuid | Zuidplein | winkelcentrum, groei | niet betaald |
-| kuipwijk | Kuipwijk | Feijenoord/De Kuip | stadion, evenementen | niet betaald |
-| rand | Ommeland | Ommoord/Alexander | rand, metro-eindpunt | P+R-kandidaat |
+| centrum | Centrum | Coolsingel + Stadhuis, Hofplein-fontein, Centraal Station, Blaak (Kubuswoningen, Markthal, Potlood), Museumpark (Depot, Euromast) | winkels, bezoekers, hoge druk | betaald, hoog tarief, 2 garages |
+| kopbrug | Kop van Zuid & Noordereiland | Erasmusbrug, De Rotterdam, KPN-toren, Hotel New York, Willemsbrug | torens, kantoren, eiland | betaald, 1 garage |
+| havenkwartier | M4H | havenloodsen, kranen | leeg haventerrein, **groeit hard vanaf jaar 2** | niet betaald |
+| oudwest | Oude Westen & Delfshaven | portiekwoningen, Pelgrimskerk-silhouet | dicht, vooroorlogs, veel fietsen | betaald, vergunningen vol |
+| noord | Noord & Blijdorp | Diergaarde | gemengd wonen | deels betaald |
+| plaswijk | Kralingen | Kralingse Plas, molen | ruim, studenten | niet betaald |
+| pleinzuid | Zuidplein & Ahoy | winkelcentrum, Ahoy | winkelcentrum, evenementen, groei | niet betaald |
+| kuipwijk | Feijenoord & De Kuip | stadion | evenementen | niet betaald |
+| rand | Prins Alexander | metro-eindpunt | rand | P+R-kandidaat |
 
-De rivier deelt de stad in Noord en Zuid. De brug en de tunnel zijn knelpunten bij evenementen.
+Extra: **Kleinpolderplein** (snelwegknooppunt, hoek kaart) met ons eigen Stadsbeheer-kantoor als thuisbasis — label "hier werken wij". Hier start de tutorial.
+
+De Maas deelt de stad in Noord en Zuid. Erasmusbrug, Willemsbrug en Maastunnel zijn knelpunten bij evenementen.
 
 ## 4. Knoppen
 
@@ -85,7 +89,9 @@ Werven duurt 2 kwartalen (vacature → instroom) en er komen max 3 FTE per rol p
 9. **Inkomsten** = Σ betaalde bezette uren × tarief × naleving × (1 − storingen) + garages + vergunningen. Ze gaan naar het **parkeerfonds** (in het echt gaan ze naar de algemene middelen; dit wordt benoemd in de nabespreking).
 10. **Klantcontact:** bezwaren = boetes × 4%. Kan klantcontact het niet aan, dan ontstaat er een achterstand en dalen de wethouder- en bewonerscijfers.
 
-## 6. De blije Rotterdammer (0–100 per persona)
+## 6. Rotterdammert centraal (0–100 per persona)
+
+Term van communicatie: **de Rotterdammert** (met t). Die staat centraal in het spel: een getekend personage in de HUD dat meekijkt, van gezicht verandert en in Rotterdamse taal reageert ("Lekker hoor, meteen een plekkie!" / "Nou, effe zoeken…" / "Ik draai al twintig minuten rondjes, hoor!"). De zes persona's zijn zes Rotterdammerts; tik erop en ze vertellen waar het knelt.
 
 | persona | stuurt op | gewicht |
 |---|---|---|
@@ -96,11 +102,11 @@ Werven duurt 2 kwartalen (vacature → instroom) en er komen max 3 FTE per rol p
 | Stad (leefbaarheid) | blik op straat, groen (straatplekken weg = +) | 10% |
 | Wethouder | begroting sluit, incidenten, klachtenachterstand | 15% |
 
-**Blije Rotterdammer** = het gewogen gemiddelde. Je ziet het altijd als een gezicht (😀→😠) plus zes kleine meters.
+**Rotterdammert-score** = het gewogen gemiddelde (in code nog `blij`). Altijd zichtbaar als personage + zes kleine meters.
 
 ## 7. Score en scorebord
 
-- **Score** = gemiddelde blije Rotterdammer over 40 kwartalen × 100.
+- **Score** = gemiddelde Rotterdammert-score over 40 kwartalen × 100.
   - Min 60 per kwartaal met een fondssaldo < 0.
   - Min 6 per punt achterstallig onderhoud aan het eind (je mag de puinhoop niet doorschuiven).
   - Strafpunten zijn bewust klein (fase 2): je verliest via ontevreden Rotterdammers, niet via boetes.
@@ -121,6 +127,36 @@ Ongeveer één per kwartaal, uit een vaste reeks per scenario. Soorten:
 - **Markt:** app-parkeren verdubbelt, elektrische auto's vragen laadplekken.
 
 Elke kaart heeft 1–3 keuzes met directe en uitgestelde effecten. Uitwerking: `data/events.json`.
+
+## 8b. Rotterdamse Momenten (engagement)
+
+Gebeurteniskaarten zijn papier; **Momenten** zijn de piekervaringen die het spel spannend houden. Ritme: ca. 1 Moment per jaar plus 1 verrassing per spel (≈ 11 per potje, elke 80–90 s iets groots).
+
+**Verloop van een Moment**
+1. **Aankondiging** — kalenderstrip bovenin: "Over 2 kwartalen: Marathon". Tijd om voor te bereiden.
+2. **Voorbereiden** — 2–3 keuzes met kosten: extra handhaving, verkeersregelaars, pendelbussen vanaf P+R, garage-tarief evenement, bewonersbrief. Voorbereiding geldt alleen als je de mensen/assets hebt (beheer telt ook hier).
+3. **Live (30–45 s)** — tijd vertraagt, camera vliegt erheen, mensenmassa en verkeer op de kaart, muziek/geluid zwelt aan. Eén eenvoudige actie: tik op garages met vrije plekken om de verkeersstroom erheen te sturen, of sleep afzettingen. Goed gestuurd = minder "?"-auto's.
+4. **Krantenkop** — fictieve krant ("De Maasbode") met kop + reacties van Rotterdammerts; effect op de Rotterdammert-score en de wethouder.
+
+| Moment | wanneer | waar | waar het om draait |
+|---|---|---|---|
+| Feyenoord speelt thuis | elk seizoen, vaker in scenario | De Kuip, Zuid | P+R, pendelbussen, handhaving foutparkeren rond stadion |
+| Marathon Rotterdam | elk Q2 | Erasmusbrug, Coolsingel dicht | garages onbereikbaar, bewoners informeren |
+| Gorilla ontsnapt uit Blijdorp | 1× per spel, verrassing | Noord | humor; verkeer ligt stil, snel schakelen |
+| Wereldhavendagen | Q3 | Maasboulevard, Kop van Zuid | bezoekers, fietsen, watertaxi |
+| Zomercarnaval | Q3 | Centrum | route-afsluitingen, schoonmaak garages achteraf |
+| Concert/festival in Ahoy | Q3 | Zuidplein | avondpiek Zuid |
+| Koningsdag | Q2 | Centrum | vrijmarkt, geen straatparkeren |
+| Oud & Nieuw bij de Erasmusbrug | Q4 | Kop van Zuid | massa, na afloop schoonmaak en schade |
+| Kampioensfeest op de Coolsingel | zeldzaam (alleen als Feyenoord-Momenten goed liepen) | Centrum | alles dicht, Rotterdammert door het dak bij goede regie |
+| Storm/hoogwater | verrassing | Noordereiland, Maasboulevard | garages en kades, onderhoudsstaat telt |
+
+**Extra binding**
+- Jaaroverzicht toont "Moment van het jaar" met je beste krantenkop.
+- Momenten liggen vast in het weekscenario → eerlijk scorebord; collega's kunnen bij de koffie vergelijken hoe ze de marathon deden.
+- Badges voor perfect geregelde Momenten (geen punten, zie §9).
+
+**Afspraken merk/naam:** "Feyenoord" alleen als naam in tekst (geen logo, clubkleuren-embleem of clubliederen). Gorilla zonder naam in beeld; knipoog in krantenkop ("Ken je die van 2007 nog?"). Laat communicatie meekijken voor publicatie.
 
 ## 9. Rotterdamse easter eggs (badges, geen punten)
 
