@@ -1,7 +1,7 @@
 // Round helpers for the playable "Jaar 1" mode: config building, goal check, stars, team load and a plain
 // "why did the score move" explanation. Pure (no DOM, no Three.js) so the game and the bots share the same code.
-import type { Config, GameState, Role } from './types';
-import { ROLES } from './types';
+import type { Config, GameState, Role, TeamId } from './types';
+import { ROLES, TEAMS } from './types';
 import { staffNeeds } from './model';
 import { evaluate } from './score';
 
@@ -31,6 +31,12 @@ export function teamLoads(s: GameState, c: Config): Record<Role, number> {
   const out = {} as Record<Role, number>;
   for (const r of ROLES) out[r] = need[r] <= 0 ? 0 : s.staff[r] > 0.001 ? need[r] / s.staff[r] : 9;
   return out;
+}
+/** Load per team (pool / capacity, backlog included). In Jaar 1 this comes from the team layer; without it from the plain staff/need ratio. */
+export function teamLoadsT(s: GameState, c: Config): Record<TeamId, number> {
+  if (s.teams) return Object.fromEntries(TEAMS.map(t => [t, s.teams!.units[t].load])) as Record<TeamId, number>;
+  const l = teamLoads(s, c);
+  return { handhaving: l.handhaver, backoffice: 0, techniek: l.monteur, schoonmaak: l.schoonmaker, klantcontact: l.klantcontact };
 }
 export const teamLevel = (load: number, c: Config): TeamLevel =>
   load >= c.scenario.goal.loadRed ? 'rood' : load >= c.scenario.goal.loadOrange ? 'oranje' : 'groen';

@@ -1,11 +1,12 @@
 // Headless Jaar 1 check: 3 bots x 20 seeds over the 4-quarter round. `npm run jaar1`
 import { loadConfig } from '../src/sim/load';
 import { createState, tick } from '../src/sim/model';
-import { goalStatus, starsFor, teamLoads, teamLevel } from '../src/sim/round';
+import { goalStatus, starsFor, teamLoadsT, teamLevel } from '../src/sim/round';
 import type { GameState } from '../src/sim/types';
 
 const cfg = loadConfig('scenario-jaar1.json');
 import { J1_BOTS as bots } from './jaar1-bots';
+const peak: Record<string, number> = {};
 const mean = (a: number[]) => a.reduce((x, y) => x + y, 0) / a.length;
 const verbose = process.argv.includes('-v');
 
@@ -15,7 +16,7 @@ for (const bot of bots) {
     let s: GameState = createState(cfg, seed), redEver = false;
     for (let q = 0; q < 4; q++) {
       s = tick(s, (bot as any).act(s, cfg), cfg);
-      const L = teamLoads(s, cfg); if (verbose && seed === 1) console.log('   load', JSON.stringify(Object.fromEntries(Object.entries(L).map(([k, v]) => [k, +v.toFixed(2)]))));
+      const L = teamLoadsT(s, cfg); if (verbose && seed === 1) console.log('   load', JSON.stringify(Object.fromEntries(Object.entries(L).map(([k, v]) => [k, +v.toFixed(2)]))));
       if (Object.values(L).some(l => teamLevel(l, cfg) === 'rood')) redEver = true;
       if (verbose && seed === 1) { const r = s.history[q]; console.log(`  ${bot.name} q${q + 1} blij ${r.blij.toFixed(1)} fonds ${(s.fonds / 1e6).toFixed(1)} rev ${(r.revenue / 1e6).toFixed(1)} costs ${(r.costs / 1e6).toFixed(1)} centrumZoek ${r.searchCentrum.toFixed(1)} avgZoek ${r.avgSearch.toFixed(1)} rej ${s.rejected.join(' | ')}`); console.log('     ', ['bewoner','ondernemer','bezoeker','fietser','stad','wethouder'].map(k => k.slice(0,4) + ' ' + (r as any)[k].toFixed(0)).join(' '), '| zoek', Object.values(s.wijken).map(w => w.id.slice(0,4) + ' ' + w.m.search.toFixed(1)).join(' '), 'bike', r.bikeShort.toFixed(2), 'netheid', r.netheid.toFixed(0)); }
     }

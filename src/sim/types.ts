@@ -1,6 +1,11 @@
 export type Config = Record<string, any>;
 export type Role = 'monteur' | 'schoonmaker' | 'handhaver' | 'klantcontact';
 export const ROLES: Role[] = ['monteur', 'schoonmaker', 'handhaver', 'klantcontact'];
+export type TeamId = 'handhaving' | 'backoffice' | 'techniek' | 'schoonmaak' | 'klantcontact';
+export const TEAMS: TeamId[] = ['handhaving', 'backoffice', 'techniek', 'schoonmaak', 'klantcontact'];
+/** Team -> staff role. Backoffice & Bezwaar has no role in the legacy model; its FTE live in `teams.units.backoffice.fte`. */
+export const TEAM_ROLE: Record<TeamId, Role | null> = { handhaving: 'handhaver', backoffice: null, techniek: 'monteur', schoonmaak: 'schoonmaker', klantcontact: 'klantcontact' };
+export type HireRole = Role | 'backoffice';
 export type AssetKind = 'garage' | 'automaat' | 'scanauto' | 'stalling' | 'nietjes' | 'pr' | 'hub';
 export type Tariff = 'laag' | 'midden' | 'hoog';
 export type Permit = 'ruim' | 'normaal' | 'krap';
@@ -18,9 +23,24 @@ export type Action =
   | { type: 'setNorm'; wijk: string; level: Norm }
   | { type: 'ovPay'; wijk: string; on: boolean }
   | { type: 'lobby'; wijk: string }
-  | { type: 'hire'; role: Role; n: number }
+  | { type: 'hire'; role: HireRole; n: number }
   | { type: 'fire'; role: Role; n: number }
+  | { type: 'moment'; id: string; picks: string[] }
+  | { type: 'dilemma'; id: string; choice: string }
   | { type: 'repair'; wijk: string; kind: 'garage' | 'stalling'; index: number };
+
+/** One team's workload for the quarter just simulated (FTE-equivalents): demand + carried-over backlog = pool; capacity = fte. */
+export interface TeamUnit { fte: number; demand: number; pool: number; done: number; achterstand: number; load: number; parts: Record<string, number> }
+export interface MomentState { id: string; picks: string[]; /** how well each pick could be carried out (0-1): limited by the capacity of the teams it leans on */ eff: Record<string, number> }
+export interface DilemmaState { id: string; choice: string; left: number }
+export interface TeamsState {
+  units: Record<TeamId, TeamUnit>;
+  /** one-off workload added this quarter by actions (FTE-equivalents per team) */
+  pulse: Record<TeamId, Record<string, number>>;
+  malfPrev: number;
+  moment: MomentState | null;
+  dilemma: DilemmaState | null;
+}
 
 export interface Asset { cap: number; backlog: number; closed: boolean }
 
@@ -46,7 +66,7 @@ export interface GameState {
   quarter: number; rngState: number; seed: number;
   fonds: number; yearBudget: number; wageIndex: number; appShare: number; teamMood: number;
   staff: Record<Role, number>;
-  hiring: { role: Role; n: number; left: number; orderedQ: number }[];
+  hiring: { role: HireRole; n: number; left: number; orderedQ: number }[];
   queue: { asset: AssetKind; wijk: string | null; count: number; left: number; removeStreet: boolean }[];
   scanautos: number;
   wijken: Record<string, Wijk>;
@@ -55,6 +75,8 @@ export interface GameState {
   netheid: number; schoonRatioPrev: number;
   firstClosureQuarter: number | null; negFondsQuarters: number; afgeroomd: number;
   rejected: string[]; messages: string[];
+  /** only present when `config.teams.enabled` (Jaar 1); the legacy 10-year model never touches it */
+  teams?: TeamsState;
   history: QuarterRow[];
 }
 

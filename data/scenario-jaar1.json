@@ -27,9 +27,9 @@
       ]
     },
     "finance": {
-      "startFonds": 26000000,
+      "startFonds": 28000000,
       "yearBudget": 0,
-      "fixedOverheadPerYear": 20000000
+      "fixedOverheadPerYear": 19000000
     },
     "assets": {
       "garage": {
@@ -59,7 +59,8 @@
       "prTargets": {
         "centrum": 0,
         "kopbrug": 0
-      }
+      },
+      "startObjections": 90
     },
     "start": {
       "wijken": {
@@ -81,6 +82,128 @@
           "streetSpots": 3500
         }
       }
+    },
+    "teams": {
+      "enabled": true,
+      "backoffice": {
+        "startFte": 5,
+        "perScanauto": 1.0,
+        "bezwaarPerFTE": 60,
+        "salary": 58000
+      },
+      "techniek": {
+        "storingPerAutomaat": 0.25
+      },
+      "klantcontact": {
+        "introPerKSpot": 0.08
+      },
+      "policyPulse": {
+        "introduce": {
+          "klantcontact": 0.15,
+          "backoffice": 0.25
+        },
+        "tariff": {
+          "klantcontact": 0.08,
+          "backoffice": 0.12
+        }
+      },
+      "effects": {
+        "backofficeCompliance": 0.6
+      },
+      "penalty": {
+        "from": 1.0,
+        "span": 0.5,
+        "wethouder": {
+          "backoffice": 8,
+          "klantcontact": 4,
+          "techniek": 3,
+          "schoonmaak": 3,
+          "handhaving": 2
+        },
+        "bewoner": {
+          "backoffice": 2,
+          "klantcontact": 3,
+          "schoonmaak": 2
+        }
+      },
+      "moment": {
+        "id": "marathon",
+        "quarter": 3,
+        "maxPicks": 2,
+        "partner": {
+          "garageReach": 0.55,
+          "text": "Verkeer sluit de Coolsingel en de Erasmusbrug af."
+        },
+        "picks": {
+          "handhaving": {
+            "label": "Extra handhaving",
+            "cost": 120000,
+            "load": {
+              "handhaving": 1.5
+            },
+            "errantMult": 0.4
+          },
+          "evenementtarief": {
+            "label": "Evenemententarief garages",
+            "cost": 40000,
+            "load": {
+              "klantcontact": 0.5
+            },
+            "garageRevMult": 1.8,
+            "visitorsMult": 0.92
+          },
+          "pendel": {
+            "label": "Pendel vanaf P+R",
+            "cost": 350000,
+            "load": {
+              "klantcontact": 0.3
+            },
+            "visitorsMult": 0.82,
+            "garageReachAdd": 0.1
+          },
+          "brief": {
+            "label": "Bewonersbrief",
+            "cost": 50000,
+            "load": {
+              "klantcontact": 0.6
+            },
+            "residentsMult": 0.94
+          }
+        }
+      },
+      "dilemma": {
+        "id": "gratis",
+        "quarter": 1,
+        "duration": 3,
+        "options": {
+          "ja": {
+            "revMult": {
+              "centrum": 0.75
+            },
+            "visitorsMult": {
+              "centrum": 1.04
+            },
+            "persona": {
+              "ondernemer": 8,
+              "bewoner": -2,
+              "wethouder": -1
+            },
+            "load": {
+              "klantcontact": 0.3
+            }
+          },
+          "nee": {
+            "persona": {
+              "ondernemer": -6,
+              "wethouder": 1
+            },
+            "load": {
+              "backoffice": 0.3
+            }
+          }
+        }
+      },
+      "backlogDecay": 0.3
     }
   },
   "goal": {

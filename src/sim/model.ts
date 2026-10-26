@@ -1,8 +1,9 @@
-import type { Action, Asset, AssetKind, Config, Effect, GameState, Role, Wijk } from './types';
+import type { Action, Asset, TeamsState, AssetKind, Config, Effect, GameState, Role, Wijk } from './types';
 import { ROLES } from './types';
 import { makeRng, type Rng } from './rng';
 import { applyEffect, expireEffects } from './effects';
 import { evaluate } from './score';
+import { initTeams, policyPulse, resetPulses, teamsBegin, teamsEnd, teamsOn, type AssetCounts } from './teams';
 
 const clamp = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x));
 const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
@@ -53,6 +54,7 @@ export function createState(c: Config, seed: number): GameState {
   };
   const need = staffNeeds(s, c);
   for (const r of ROLES) s.staff[r] = Math.round(need[r] * c.staff.startBuffer * 10) / 10;
+  if (teamsOn(c)) s.teams = initTeams(s, c);
   return s;
 }
 
@@ -61,6 +63,9 @@ export function tick(prev: GameState, actions: Action[], c: Config, events: Effe
   const s: GameState = structuredClone(prev);
   s.rejected = []; s.messages = [];
   const rng = makeRng(s.rngState), q = s.quarter;
+  // Jaar-1 teams: assets that were operating at the start of the quarter generate work (new ones start up one quarter later)
+  const lagN: AssetCounts | undefined = teamsOn(c) ? counts(s) : undefined;
+  if (teamsOn(c)) resetPulses(s, c);
   expireEffects(s);
   for (const g of [...(c.scenario?.growth ?? []), ...(c.scenario?.events ?? [])])
     if (g.quarter === q) { s.messages.push(g.label); for (const e of g.effects) applyEffect(s, e); }
@@ -69,7 +74,7 @@ export function tick(prev: GameState, actions: Action[], c: Config, events: Effe
   for (const a of actions) applyAction(s, a, c, rng);
   // Jaar-1 mode: orders that are due finish *before* the quarter is simulated, so the player sees the effect in the same quarter.
   if (c.model.instantBuild) advanceQueues(s, c);
-  simulate(s, c, rng);
+  simulate(s, c, rng, lagN);
   if (!c.model.instantBuild) advanceQueues(s, c);
   if ((q + 1) % c.finance.budgetEvery === 0) onderuitputting(s, c);
   s.rngState = rng.state; s.quarter++;
@@ -113,8 +118,9 @@ function applyAction(s: GameState, a: Action, c: Config, rng: Rng) {
       if (!free()) return;
       if (w!.paid) return rej('al betaald');
       Object.assign(w!, { paid: true, tariff: a.level ?? 'midden', introLeft: c.policy.introQuarters, lastPolicyQ: s.quarter });
+      if (teamsOn(c)) policyPulse(s, c, w!.id, true);
       return;
-    case 'setTariff': if (!free()) return; if (!w!.paid) return rej('wijk is niet betaald'); w!.tariff = a.level; w!.lastPolicyQ = s.quarter; return;
+    case 'setTariff': if (!free()) return; if (!w!.paid) return rej('wijk is niet betaald'); w!.tariff = a.level; w!.lastPolicyQ = s.quarter; if (teamsOn(c)) policyPulse(s, c, w!.id, false); return;
     case 'setPermit': if (!free()) return; w!.permit = a.level; w!.lastPolicyQ = s.quarter; return;
     case 'setNorm': if (!free()) return; w!.norm = a.level; w!.lastPolicyQ = s.quarter; return;
     case 'ovPay': if (a.on) w!.ovPaying = true; else { w!.ovPaying = false; w!.ovPayQuarters = 0; } return;
@@ -123,7 +129,27 @@ function applyAction(s: GameState, a: Action, c: Config, rng: Rng) {
       w!.lastLobbyQ = s.quarter;
       if (rng.next() < c.ov.lobbyChance && w!.ovBase < c.ov.maxLevel) { w!.ovBase++; s.messages.push(`Lobby geslaagd: OV in ${w!.id} +1`); }
       return;
+    case 'moment': {
+      if (!teamsOn(c)) return rej('geen Moment in dit scenario');
+      const mc = c.teams.moment;
+      if (!mc || a.id !== mc.id || s.quarter !== mc.quarter) return rej('Moment is nu niet aan de beurt');
+      const picks = [...new Set(a.picks)].filter(p => mc.picks[p]).slice(0, mc.maxPicks);
+      const cost = sum(picks.map(p => mc.picks[p].cost));
+      if (!c.finance.allowDebtBuild && s.fonds < cost) return rej('onvoldoende fonds');
+      s.fonds -= cost;
+      for (const p of picks) for (const [tm, v] of Object.entries(mc.picks[p].load ?? {})) s.teams!.pulse[tm as keyof TeamsState['pulse']][`moment_${p}`] = v as number;
+      s.teams!.moment = { id: mc.id, picks, eff: {} };
+      return;
+    }
+    case 'dilemma': {
+      if (!teamsOn(c)) return rej('geen dilemma in dit scenario');
+      const dc = c.teams.dilemma;
+      if (!dc || a.id !== dc.id || s.quarter !== dc.quarter || !dc.options[a.choice]) return rej('dilemma is nu niet aan de beurt');
+      s.teams!.dilemma = { id: dc.id, choice: a.choice, left: dc.duration };
+      return;
+    }
     case 'hire': {
+      if (a.role === 'backoffice' && !teamsOn(c)) return rej('geen backoffice in dit scenario');
       const already = sum(s.hiring.filter(h => h.role === a.role && h.orderedQ === s.quarter).map(h => h.n));
       const n = Math.min(Math.floor(a.n), c.staff.maxHirePerRolePerQuarter - already);
       if (n <= 0) return rej(`max ${c.staff.maxHirePerRolePerQuarter} FTE per rol per kwartaal`);
@@ -161,13 +187,13 @@ function complete(s: GameState, item: GameState['queue'][number], c: Config) {
 }
 
 function advanceQueues(s: GameState, c: Config) {
-  for (const h of s.hiring) if (--h.left <= 0) s.staff[h.role] += h.n;
+  for (const h of s.hiring) if (--h.left <= 0) { if (h.role === 'backoffice') s.teams!.units.backoffice.fte += h.n; else s.staff[h.role] += h.n; }
   s.hiring = s.hiring.filter(h => h.left > 0);
   for (const it of s.queue) if (--it.left <= 0) complete(s, it, c);
   s.queue = s.queue.filter(it => it.left > 0);
 }
 
-function simulate(s: GameState, c: Config, rng: Rng) {
+function simulate(s: GameState, c: Config, rng: Rng, lagN?: AssetCounts) {
   const m = c.model, ids: string[] = c.wijkOrder, q = s.quarter, W = ids.map(id => s.wijken[id]);
 
   // staff drift, wages, app share
@@ -177,14 +203,20 @@ function simulate(s: GameState, c: Config, rng: Rng) {
   s.appShare = Math.min(m.appShare.max, s.appShare + (m.appShare.end - m.appShare.start) / c.quarters);
   const need = staffNeeds(s, c);
   const ratio = (r: Role) => need[r] > 0 ? s.staff[r] / need[r] : 2;
-  const rM = ratio('monteur'), rS = ratio('schoonmaker');
+  let rM = ratio('monteur'), rS = ratio('schoonmaker');
+  // Jaar-1: team workload (lagged assets, backlog, moment, dilemma) replaces the plain staff/need ratios
+  const TB = lagN ? (s.teams!.units.backoffice.fte *= 1 - c.staff.attritionPerQuarter * (1 + c.staff.moodAttritionK * (1 - s.teamMood / 100)), teamsBegin(s, c, lagN)) : null;
+  if (TB) { rM = TB.rM; rS = TB.rS; }
+  const mo = TB?.mods, dil = TB?.dil;
 
   // rule 4: compliance from scan coverage
   const paidSpots = sum(W.filter(w => w.paid).map(w => w.streetSpots));
-  const scanEff = Math.min(s.scanautos, s.staff.handhaver / c.assets.scanauto.staff.handhaver); // scan cars without enforcers do nothing
+  const scanEff = Math.min(TB ? TB.scanActive : s.scanautos, s.staff.handhaver / c.assets.scanauto.staff.handhaver); // scan cars without enforcers do nothing
   const dekking = paidSpots > 0 ? scanEff * c.assets.scanauto.coverage / paidSpots : 1;
   // coverage above 100% buys nothing: extra scan cars only cost money (capped here, and again in the fines below)
-  const nalevingPaid = m.compliance.base + m.compliance.gain * Math.min(1, dekking);
+  // Jaar-1: fines that the backoffice cannot process in time weaken the deterrent (scans stay on the pile)
+  const bo = TB ? 1 - c.teams.effects.backofficeCompliance * (1 - TB.eB) : 1;
+  const nalevingPaid = m.compliance.base + m.compliance.gain * Math.min(1, dekking) * bo;
   // rule 5: malfunctions (automaten matter less as app share grows)
   const malf = m.malfunction.base + m.malfunction.k * Math.max(0, 1 - rM);
   const malfEff = malf * (1 - s.appShare);
@@ -201,7 +233,7 @@ function simulate(s: GameState, c: Config, rng: Rng) {
     const pf = w.paid ? c.policy.permitFactor[w.permit] : 1;
     const prEff = prOk ? Math.min(m.prEffectCap, m.prEffectPerSpot * prW.pr * c.assets.pr.cap * (m.prTargets[w.id] ?? 0)) : 0;
     const noise = 1 + m.noise * rng.normal();
-    const rawVis = w.visitors * season * noise;
+    const rawVis = w.visitors * season * noise * (w.id === 'centrum' ? (mo?.visitorsMult ?? 1) * (dil?.visitorsMult[w.id] ?? 1) : dil?.visitorsMult[w.id] ?? 1);
     const vis = rawVis * tf * Math.max(m.minVisitorFactor, 1 - c.ov.effectPerLevel * lvl - prEff);
     // new-build cars: parking norm, shared-mobility hubs; low norm only works with OV/hub support
     const supported = lvl >= c.policy.normLowNeedsOv || w.hubs > 0;
@@ -213,7 +245,7 @@ function simulate(s: GameState, c: Config, rng: Rng) {
       const out = newStreet * c.policy.normLowSpillShare; newStreet -= out;
       const nb = c.neighbors[w.id] as string[]; nb.forEach(n => incoming[n] += out / nb.length);
     }
-    const resAll = w.pop * w.carOwn + newStreet;
+    const resAll = (w.pop * w.carOwn + newStreet) * (w.id === 'centrum' ? mo?.residentsMult ?? 1 : 1);
     if (w.paid && w.introLeft <= 0) { // waterbed: priced-out visitors go to unpaid neighbours
       const nb = (c.neighbors[w.id] as string[]).filter(n => !s.wijken[n].paid);
       nb.forEach(n => incoming[n] += rawVis * (1 - tf) * m.waterbedShare / nb.length);
@@ -227,18 +259,19 @@ function simulate(s: GameState, c: Config, rng: Rng) {
   for (const w of W) {
     const d = D[w.id];
     const nal = w.paid ? nalevingPaid : 1;
-    const streetEff = w.streetSpots * (1 - (1 - nal) * m.errantShare);
-    const garageCap = sum(w.garages.map(g => g.cap * (g.closed ? m.maintenance.closedCapFactor : 1)));
+    const cen = w.id === 'centrum';
+    const streetEff = w.streetSpots * (1 - (1 - nal) * m.errantShare * (cen ? mo?.errantMult ?? 1 : 1));
+    const garageCap = sum(w.garages.map(g => g.cap * (g.closed ? m.maintenance.closedCapFactor : 1))) * (cen ? mo?.garageReach ?? 1 : 1);
     const supply = Math.max(1, streetEff + garageCap);
     const demand = d.res + d.vis + incoming[w.id];
     const bez = demand / supply, occ = Math.min(1, bez);
     const streetOcc = occ * streetEff, visShare = demand > 0 ? d.vis / demand : 0;
     const visOnStreet = streetOcc * visShare;
     const payable = s.appShare + (1 - s.appShare) * clamp(w.automaten * c.assets.automaat.spotsPerAutomaat / Math.max(1, w.streetSpots), 0, 1);
-    const revGarage = occ * garageCap * m.garageRevenuePerSpotQuarter;
+    const revGarage = occ * garageCap * m.garageRevenuePerSpotQuarter * (cen ? mo?.garageRevMult ?? 1 : 1);
     let rev = revGarage, revStreet = 0, revPermit = 0;
     if (w.paid) {
-      revStreet = visOnStreet * m.paidHoursPerSpotQuarter * c.policy.tariffEur[w.tariff] * nal * payable * (1 - malfEff);
+      revStreet = visOnStreet * m.paidHoursPerSpotQuarter * c.policy.tariffEur[w.tariff] * nal * payable * (1 - malfEff) * (dil?.revMult[w.id] ?? 1);
       revPermit = Math.min(d.res, streetEff) * m.permitFeePerQuarter;
       rev += revStreet + revPermit;
       violating += visOnStreet * (1 - nal) * (m.tariffFineMult?.[w.tariff] ?? 1); // higher tariff -> bigger fines -> more objections
@@ -252,7 +285,9 @@ function simulate(s: GameState, c: Config, rng: Rng) {
   const fines = violating * Math.min(1, dekking) * m.finesPerViolatingSpot;
   s.objections = fines * m.objectionRate;
   const avail = Math.max(0, s.staff.klantcontact - s.scanautos * c.assets.scanauto.staff.klantcontact);
-  s.klantBacklog = Math.max(0, s.klantBacklog + s.objections - avail * m.objectionsPerFTE);
+  // Jaar-1: peaks (tariff change, introduction, moment) and the introduction period add calls on top of the objections
+  const extraCalls = TB ? sum(Object.values(s.teams!.units.klantcontact.parts).slice(2)) * m.objectionsPerFTE : 0;
+  s.klantBacklog = Math.max(0, s.klantBacklog * (TB ? 1 - c.teams.backlogDecay : 1) + s.objections + extraCalls - avail * m.objectionsPerFTE);
 
   // rule 6: maintenance backlog + closures
   let newClosures = 0, closedCount = 0, backlog = 0;
@@ -281,7 +316,7 @@ function simulate(s: GameState, c: Config, rng: Rng) {
   const a = c.assets, n = counts(s);
   const opex = (n.garage * a.garage.opex + n.automaat * a.automaat.opex + n.scanauto * a.scanauto.opex + n.stalling * a.stalling.opex
     + sum(W.map(w => w.bikeRacks)) * a.nietjes.opex + n.pr * a.pr.opex + sum(W.map(w => w.hubs)) * a.hub.opex) / 4;
-  const staffCost = sum(ROLES.map(r => s.staff[r] * c.staff.salary[r])) * s.wageIndex / 4;
+  const staffCost = (sum(ROLES.map(r => s.staff[r] * c.staff.salary[r])) + (TB ? s.teams!.units.backoffice.fte * c.teams.backoffice.salary : 0)) * s.wageIndex / 4;
   let ovCost = 0;
   for (const w of W) if (w.ovPaying) { ovCost += c.ov.payPerYear / 4; w.ovPayQuarters++; }
   const costs = opex + staffCost + ovCost + c.finance.fixedOverheadPerYear * s.wageIndex / 4;
@@ -289,7 +324,13 @@ function simulate(s: GameState, c: Config, rng: Rng) {
   if (s.fonds < 0) s.negFondsQuarters++;
 
   // personas, history; intro phase counts down afterwards
-  const ev = evaluate(s, c, { malfEff, bikeShort, newClosures, closedCount });
+  const dc = TB && s.teams!.dilemma && s.teams!.dilemma.left > 0 ? c.teams.dilemma.options[s.teams!.dilemma.choice] : null;
+  const tp = TB ? teamsEnd(s, c, malfEff) : null;
+  const ev = evaluate(s, c, { malfEff, bikeShort, newClosures, closedCount, teamPenWethouder: tp?.wethouder, teamPenBewoner: tp?.bewoner });
+  if (dc?.persona) {
+    for (const [k, d] of Object.entries(dc.persona)) (ev as any)[k] = clamp((ev as any)[k] + (d as number), 0, 100);
+    ev.blij = Object.keys(c.score.weights).reduce((a, k) => a + (ev as any)[k] * c.score.weights[k], 0);
+  }
   const wsr = (k: 'search') => sum(W.map(w => w.m[k] * (w.pop + w.newPop))) / sum(W.map(w => w.pop + w.newPop));
   s.history.push({
     q, year: c.startYear + Math.floor(q / 4), ...ev, fonds: s.fonds, revenue, costs, opex, staffCost, overhead: c.finance.fixedOverheadPerYear * s.wageIndex / 4, backlog, closed: closedCount, netheid: s.netheid,
