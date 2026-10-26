@@ -11,6 +11,8 @@ Je beheert 10 jaar (2026–2036) de parkeervoorzieningen van Rotterdam ("de Maas
 - Speelduur: ~15 min. 1 jaar ≈ 90 s, 40 kwartalen, pauze altijd mogelijk.
 - Stijl: SimCity-achtig, 3D low-poly miniatuurstad (diorama, zacht licht, tilt-shift; referenties Mini Motorways / Islanders / Townscaper). Three.js + TypeScript, UI-laag in HTML/CSS.
 - Kwaliteitslat: voelt als een professioneel indiespel — tutorial, geluid, animaties, verzorgde UI.
+- Huisstijl Gemeente Rotterdam mag (Rotterdam-groen als UI-accent; officieel logo/font later invoegen).
+- Slogan Kleinpolderplein: **"Steden schuilen niet wanneer het regent."** Terug te zien op titelscherm, bij regen en bij het Storm-Moment (goed onderhouden stad = badge).
 - Losse game, met online scorebord.
 
 ## 2. Spelverloop
@@ -111,7 +113,7 @@ Term van communicatie: **de Rotterdammert** (met t). Die staat centraal in het s
   - Min 6 per punt achterstallig onderhoud aan het eind (je mag de puinhoop niet doorschuiven).
   - Strafpunten zijn bewust klein (fase 2): je verliest via ontevreden Rotterdammers, niet via boetes.
 - **Onderuitputting:** bij de jaarafsluiting vloeit fondssaldo boven 5 M€ terug naar de algemene middelen. Oppotten heeft geen zin; geld moet aan het werk.
-- Startfonds 30 M€, jaarbudget 18 M€, vaste lasten 33 M€/jr (stand na fase 2, zie `docs/BALANS.md`).
+- Startfonds 28 M€, jaarbudget 18 M€, vaste lasten 24 M€/jr; tarief hoog = dure noodgreep (+ wethouder-straf 'graaitarieven'). Actuele stand en alle knoppen: `docs/BALANS.md` (leidend voor getallen).
 - **Eerlijk:** het scenario van de week heeft een vaste seed, dus iedereen krijgt dezelfde torens en kaarten.
 - **Scorebord:** bijnaam + afdeling (keuzelijst), filter op vulgaire namen, week- en all-time-lijst. Geen login, geen e-mail.
 - **Easter eggs leveren badges op, geen punten.** Zo blijft de ranglijst over beheer gaan.
@@ -142,7 +144,7 @@ Gebeurteniskaarten zijn papier; **Momenten** zijn de piekervaringen die het spel
 |---|---|---|---|
 | Feyenoord speelt thuis | elk seizoen, vaker in scenario | De Kuip, Zuid | P+R, pendelbussen, handhaving foutparkeren rond stadion |
 | Marathon Rotterdam | elk Q2 | Erasmusbrug, Coolsingel dicht | garages onbereikbaar, bewoners informeren |
-| Gorilla ontsnapt uit Blijdorp | 1× per spel, verrassing | Noord | humor; verkeer ligt stil, snel schakelen |
+| Bokito ontsnapt uit Blijdorp | 1× per spel, verrassing | Noord | humor; verkeer ligt stil, snel schakelen |
 | Wereldhavendagen | Q3 | Maasboulevard, Kop van Zuid | bezoekers, fietsen, watertaxi |
 | Zomercarnaval | Q3 | Centrum | route-afsluitingen, schoonmaak garages achteraf |
 | Concert/festival in Ahoy | Q3 | Zuidplein | avondpiek Zuid |
@@ -156,7 +158,7 @@ Gebeurteniskaarten zijn papier; **Momenten** zijn de piekervaringen die het spel
 - Momenten liggen vast in het weekscenario → eerlijk scorebord; collega's kunnen bij de koffie vergelijken hoe ze de marathon deden.
 - Badges voor perfect geregelde Momenten (geen punten, zie §9).
 
-**Afspraken merk/naam:** "Feyenoord" alleen als naam in tekst (geen logo, clubkleuren-embleem of clubliederen). Gorilla zonder naam in beeld; knipoog in krantenkop ("Ken je die van 2007 nog?"). Laat communicatie meekijken voor publicatie.
+**Afspraken merk/naam:** "Feyenoord" alleen als naam in tekst (geen logo, clubkleuren-embleem of clubliederen). Bokito mag bij naam ("Bokito ontsnapt uit Blijdorp!"; knipoog "Ken je die van 2007 nog?"). Laat communicatie meekijken voor publicatie.
 
 ## 9. Rotterdamse easter eggs (badges, geen punten)
 
