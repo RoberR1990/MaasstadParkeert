@@ -78,3 +78,43 @@ test('onderuitputting: fonds above reserve cap flows back at year close and is c
   const low = createState(cfg, 1); low.fonds = 1e6; onderuitputting(low, cfg);
   assert.equal(low.fonds, 1e6); assert.equal(low.afgeroomd, 0);   // below the cap nothing is lost
 });
+
+test('scan coverage above 100% gives no extra naleving or revenue', () => {
+  const at = (mult: number) => {
+    const s = createState(cfg, 5);
+    const paid = Object.values(s.wijken).filter(w => w.paid).reduce((a, w) => a + w.streetSpots, 0);
+    s.scanautos = (paid / cfg.assets.scanauto.coverage) * mult;
+    s.staff.handhaver = s.scanautos * cfg.assets.scanauto.staff.handhaver * 2;   // staff never the limit
+    return tick(s, [], cfg).history[0];
+  };
+  const full = at(1), double = at(2), half = at(0.5);
+  assert.ok(Math.abs(full.dekking - 1) < 1e-9);
+  assert.equal(double.naleving, full.naleving);
+  assert.equal(double.revenue, full.revenue);
+  assert.ok(half.naleving < full.naleving);                                   // below 100% coverage does matter
+});
+
+test('revenue sanity: doing nothing and the beheerder stay within 8-25 M€/yr in year 1', () => {
+  for (const b of [0, 2]) {
+    let s = createState(cfg, 2);
+    for (let q = 0; q < 4; q++) s = tick(s, BOTS[b].act(s, cfg), cfg);
+    const rev = s.history.reduce((a, r) => a + r.revenue, 0) / 1e6;
+    assert.ok(rev > 8 && rev < 25, `${BOTS[b].name} year-1 revenue ${rev.toFixed(1)} M€`);
+  }
+});
+
+test('exploit check: handhaver-beheerder (max scan cars + high tariffs) does not beat beheerder by more than 3%', () => {
+  const bi = BOTS.findIndex(b => b.name === 'beheerder'), hi = BOTS.findIndex(b => b.name === 'handhaver-beheerder');
+  for (const seed of [1, 2, 3]) {
+    const a = finalScore(play(bi, seed), cfg).score, b = finalScore(play(hi, seed), cfg).score;
+    assert.ok(b <= a * 1.03, `seed ${seed}: ${b.toFixed(0)} vs ${a.toFixed(0)}`);
+  }
+});
+
+test('high tariff is not a money machine: hoog yields less revenue than midden per wijk', () => {
+  const rev = (level: 'midden' | 'hoog') => {
+    const s = createState(cfg, 4); s.wijken.kopbrug.tariff = level; s.wijken.kopbrug.lastPolicyQ = -99;
+    return tick(s, [], cfg).wijken.kopbrug.m.revenue;
+  };
+  assert.ok(rev('hoog') < rev('midden'));
+});

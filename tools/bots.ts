@@ -223,6 +223,21 @@ export const random: Bot = {
   },
 };
 
-export const BOTS: Bot[] = [nietsdoen, bouwwoede, beheerder, ovFirst, handhaver, fietser, random];
+/** Exploit test: beheerder's full logic, plus handhaver's scan car surplus and high tariffs everywhere. Must NOT beat plain beheerder. */
+export const handhaverBeheerder: Bot = {
+  name: 'handhaver-beheerder',
+  act(s, c) {
+    const out = beheerder.act(s, c).map(a => a.type === 'introducePaid' ? { ...a, level: 'hoog' as const } : a);
+    const W = Object.values(s.wijken), spend = mkSpend(s, c);
+    for (const w of W) if (w.paid && w.tariff !== 'hoog' && w.introLeft <= 0) out.push({ type: 'setTariff', wijk: w.id, level: 'hoog' });
+    const paidSpots = sum(W.filter(w => w.paid).map(w => w.streetSpots));
+    const queuedHere = sum(out.filter(a => a.type === 'build' && a.asset === 'scanauto').map(() => 1));
+    const scanHave = s.scanautos + queued(s, 'scanauto') + queuedHere;
+    if (scanHave * c.assets.scanauto.coverage < paidSpots * 1.05 && spend(c.assets.scanauto.capex, 0, 'scanauto')) out.push({ type: 'build', asset: 'scanauto', count: 1 });
+    return out;
+  },
+};
+
+export const BOTS: Bot[] = [nietsdoen, bouwwoede, beheerder, ovFirst, handhaver, fietser, random, handhaverBeheerder];
 /** Run a bot's act() with its name registered for guard logging. */
 export const actAs = (bot: Bot, s: GameState, c: Config) => { curBot = bot.name; return bot.act(s, c); };

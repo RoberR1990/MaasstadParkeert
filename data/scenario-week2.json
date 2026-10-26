@@ -1,0 +1,961 @@
+{
+ "name": "Week 2 - Ommeland en Bergkade eerst",
+ "seed": 2,
+ "growth": [
+  {
+   "quarter": 4,
+   "label": "Toren Oud-West",
+   "effects": [
+    {
+     "target": "wijken.oudwest.newPop",
+     "op": "add",
+     "value": 2000
+    },
+    {
+     "target": "wijken.oudwest.visitors",
+     "op": "add",
+     "value": 80
+    },
+    {
+     "target": "wijken.oudwest.bikeDemand",
+     "op": "add",
+     "value": 900
+    }
+   ]
+  },
+  {
+   "quarter": 6,
+   "label": "Nieuwbouw Ommeland I",
+   "effects": [
+    {
+     "target": "wijken.rand.newPop",
+     "op": "add",
+     "value": 3000
+    },
+    {
+     "target": "wijken.rand.visitors",
+     "op": "add",
+     "value": 100
+    },
+    {
+     "target": "wijken.rand.bikeDemand",
+     "op": "add",
+     "value": 1200
+    }
+   ]
+  },
+  {
+   "quarter": 8,
+   "label": "Studentenflat Kuipwijk",
+   "effects": [
+    {
+     "target": "wijken.kuipwijk.newPop",
+     "op": "add",
+     "value": 2500
+    },
+    {
+     "target": "wijken.kuipwijk.visitors",
+     "op": "add",
+     "value": 100
+    },
+    {
+     "target": "wijken.kuipwijk.bikeDemand",
+     "op": "add",
+     "value": 1500
+    }
+   ]
+  },
+  {
+   "quarter": 10,
+   "label": "Toren Merwehaven",
+   "effects": [
+    {
+     "target": "wijken.havenkwartier.newPop",
+     "op": "add",
+     "value": 900
+    },
+    {
+     "target": "wijken.havenkwartier.visitors",
+     "op": "add",
+     "value": 60
+    },
+    {
+     "target": "wijken.havenkwartier.bikeDemand",
+     "op": "add",
+     "value": 500
+    },
+    {
+     "target": "wijken.havenkwartier.streetSpots",
+     "op": "add",
+     "value": 80
+    }
+   ]
+  },
+  {
+   "quarter": 10,
+   "label": "Nieuwbouw Plaswijk",
+   "effects": [
+    {
+     "target": "wijken.plaswijk.newPop",
+     "op": "add",
+     "value": 2500
+    },
+    {
+     "target": "wijken.plaswijk.visitors",
+     "op": "add",
+     "value": 100
+    },
+    {
+     "target": "wijken.plaswijk.bikeDemand",
+     "op": "add",
+     "value": 1200
+    }
+   ]
+  },
+  {
+   "quarter": 12,
+   "label": "Toren Merwehaven",
+   "effects": [
+    {
+     "target": "wijken.havenkwartier.newPop",
+     "op": "add",
+     "value": 900
+    },
+    {
+     "target": "wijken.havenkwartier.visitors",
+     "op": "add",
+     "value": 60
+    },
+    {
+     "target": "wijken.havenkwartier.bikeDemand",
+     "op": "add",
+     "value": 500
+    },
+    {
+     "target": "wijken.havenkwartier.streetSpots",
+     "op": "add",
+     "value": 80
+    }
+   ]
+  },
+  {
+   "quarter": 12,
+   "label": "Pleinzuid uitbreiding",
+   "effects": [
+    {
+     "target": "wijken.pleinzuid.newPop",
+     "op": "add",
+     "value": 2500
+    },
+    {
+     "target": "wijken.pleinzuid.visitors",
+     "op": "add",
+     "value": 700
+    },
+    {
+     "target": "wijken.pleinzuid.bikeDemand",
+     "op": "add",
+     "value": 1500
+    },
+    {
+     "target": "wijken.pleinzuid.streetSpots",
+     "op": "add",
+     "value": 400
+    }
+   ]
+  },
+  {
+   "quarter": 14,
+   "label": "Woontoren Bergkade",
+   "effects": [
+    {
+     "target": "wijken.noord.newPop",
+     "op": "add",
+     "value": 1500
+    },
+    {
+     "target": "wijken.noord.visitors",
+     "op": "add",
+     "value": 60
+    },
+    {
+     "target": "wijken.noord.bikeDemand",
+     "op": "add",
+     "value": 800
+    }
+   ]
+  },
+  {
+   "quarter": 14,
+   "label": "Toren Merwehaven",
+   "effects": [
+    {
+     "target": "wijken.havenkwartier.newPop",
+     "op": "add",
+     "value": 900
+    },
+    {
+     "target": "wijken.havenkwartier.visitors",
+     "op": "add",
+     "value": 60
+    },
+    {
+     "target": "wijken.havenkwartier.bikeDemand",
+     "op": "add",
+     "value": 500
+    },
+    {
+     "target": "wijken.havenkwartier.streetSpots",
+     "op": "add",
+     "value": 80
+    }
+   ]
+  },
+  {
+   "quarter": 16,
+   "label": "Toren Merwehaven",
+   "effects": [
+    {
+     "target": "wijken.havenkwartier.newPop",
+     "op": "add",
+     "value": 900
+    },
+    {
+     "target": "wijken.havenkwartier.visitors",
+     "op": "add",
+     "value": 60
+    },
+    {
+     "target": "wijken.havenkwartier.bikeDemand",
+     "op": "add",
+     "value": 500
+    },
+    {
+     "target": "wijken.havenkwartier.streetSpots",
+     "op": "add",
+     "value": 80
+    }
+   ]
+  },
+  {
+   "quarter": 16,
+   "label": "Binnenstad-torens",
+   "effects": [
+    {
+     "target": "wijken.centrum.newPop",
+     "op": "add",
+     "value": 1500
+    },
+    {
+     "target": "wijken.centrum.visitors",
+     "op": "add",
+     "value": 200
+    },
+    {
+     "target": "wijken.centrum.bikeDemand",
+     "op": "add",
+     "value": 800
+    }
+   ]
+  },
+  {
+   "quarter": 18,
+   "label": "Kopbrug-toren",
+   "effects": [
+    {
+     "target": "wijken.kopbrug.newPop",
+     "op": "add",
+     "value": 1500
+    },
+    {
+     "target": "wijken.kopbrug.visitors",
+     "op": "add",
+     "value": 150
+    },
+    {
+     "target": "wijken.kopbrug.bikeDemand",
+     "op": "add",
+     "value": 800
+    }
+   ]
+  },
+  {
+   "quarter": 20,
+   "label": "Toren Merwehaven",
+   "effects": [
+    {
+     "target": "wijken.havenkwartier.newPop",
+     "op": "add",
+     "value": 900
+    },
+    {
+     "target": "wijken.havenkwartier.visitors",
+     "op": "add",
+     "value": 60
+    },
+    {
+     "target": "wijken.havenkwartier.bikeDemand",
+     "op": "add",
+     "value": 500
+    },
+    {
+     "target": "wijken.havenkwartier.streetSpots",
+     "op": "add",
+     "value": 80
+    }
+   ]
+  },
+  {
+   "quarter": 20,
+   "label": "Nieuwbouw Plaswijk II",
+   "effects": [
+    {
+     "target": "wijken.plaswijk.newPop",
+     "op": "add",
+     "value": 2000
+    },
+    {
+     "target": "wijken.plaswijk.visitors",
+     "op": "add",
+     "value": 100
+    },
+    {
+     "target": "wijken.plaswijk.bikeDemand",
+     "op": "add",
+     "value": 1200
+    }
+   ]
+  },
+  {
+   "quarter": 22,
+   "label": "Kopbrug-toren II",
+   "effects": [
+    {
+     "target": "wijken.kopbrug.newPop",
+     "op": "add",
+     "value": 1500
+    },
+    {
+     "target": "wijken.kopbrug.visitors",
+     "op": "add",
+     "value": 150
+    },
+    {
+     "target": "wijken.kopbrug.bikeDemand",
+     "op": "add",
+     "value": 800
+    }
+   ]
+  },
+  {
+   "quarter": 24,
+   "label": "Toren Merwehaven",
+   "effects": [
+    {
+     "target": "wijken.havenkwartier.newPop",
+     "op": "add",
+     "value": 900
+    },
+    {
+     "target": "wijken.havenkwartier.visitors",
+     "op": "add",
+     "value": 60
+    },
+    {
+     "target": "wijken.havenkwartier.bikeDemand",
+     "op": "add",
+     "value": 500
+    },
+    {
+     "target": "wijken.havenkwartier.streetSpots",
+     "op": "add",
+     "value": 80
+    }
+   ]
+  },
+  {
+   "quarter": 26,
+   "label": "Toren Oud-West II",
+   "effects": [
+    {
+     "target": "wijken.oudwest.newPop",
+     "op": "add",
+     "value": 2000
+    },
+    {
+     "target": "wijken.oudwest.visitors",
+     "op": "add",
+     "value": 80
+    },
+    {
+     "target": "wijken.oudwest.bikeDemand",
+     "op": "add",
+     "value": 900
+    }
+   ]
+  },
+  {
+   "quarter": 28,
+   "label": "Toren Merwehaven",
+   "effects": [
+    {
+     "target": "wijken.havenkwartier.newPop",
+     "op": "add",
+     "value": 900
+    },
+    {
+     "target": "wijken.havenkwartier.visitors",
+     "op": "add",
+     "value": 60
+    },
+    {
+     "target": "wijken.havenkwartier.bikeDemand",
+     "op": "add",
+     "value": 500
+    },
+    {
+     "target": "wijken.havenkwartier.streetSpots",
+     "op": "add",
+     "value": 80
+    }
+   ]
+  },
+  {
+   "quarter": 30,
+   "label": "Nieuwbouw Ommeland II",
+   "effects": [
+    {
+     "target": "wijken.rand.newPop",
+     "op": "add",
+     "value": 3000
+    },
+    {
+     "target": "wijken.rand.visitors",
+     "op": "add",
+     "value": 100
+    },
+    {
+     "target": "wijken.rand.bikeDemand",
+     "op": "add",
+     "value": 1200
+    }
+   ]
+  },
+  {
+   "quarter": 32,
+   "label": "Toren Merwehaven",
+   "effects": [
+    {
+     "target": "wijken.havenkwartier.newPop",
+     "op": "add",
+     "value": 900
+    },
+    {
+     "target": "wijken.havenkwartier.visitors",
+     "op": "add",
+     "value": 60
+    },
+    {
+     "target": "wijken.havenkwartier.bikeDemand",
+     "op": "add",
+     "value": 500
+    },
+    {
+     "target": "wijken.havenkwartier.streetSpots",
+     "op": "add",
+     "value": 80
+    }
+   ]
+  },
+  {
+   "quarter": 34,
+   "label": "Studentenflat Kuipwijk II",
+   "effects": [
+    {
+     "target": "wijken.kuipwijk.newPop",
+     "op": "add",
+     "value": 2500
+    },
+    {
+     "target": "wijken.kuipwijk.visitors",
+     "op": "add",
+     "value": 100
+    },
+    {
+     "target": "wijken.kuipwijk.bikeDemand",
+     "op": "add",
+     "value": 1500
+    }
+   ]
+  },
+  {
+   "quarter": 36,
+   "label": "Pleinzuid II",
+   "effects": [
+    {
+     "target": "wijken.pleinzuid.newPop",
+     "op": "add",
+     "value": 2000
+    },
+    {
+     "target": "wijken.pleinzuid.visitors",
+     "op": "add",
+     "value": 400
+    },
+    {
+     "target": "wijken.pleinzuid.bikeDemand",
+     "op": "add",
+     "value": 1000
+    }
+   ]
+  }
+ ],
+ "events": [
+  {
+   "quarter": 3,
+   "label": "Wedstrijddag Kuipwijk",
+   "effects": [
+    {
+     "target": "wijken.kuipwijk.visitors",
+     "op": "mul",
+     "value": 2.0,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 4,
+   "label": "Havenfestival",
+   "effects": [
+    {
+     "target": "wijken.centrum.visitors",
+     "op": "mul",
+     "value": 1.25,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 7,
+   "label": "Wedstrijddag Kuipwijk",
+   "effects": [
+    {
+     "target": "wijken.kuipwijk.visitors",
+     "op": "mul",
+     "value": 2.0,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 8,
+   "label": "Marathon",
+   "effects": [
+    {
+     "target": "wijken.centrum.visitors",
+     "op": "mul",
+     "value": 1.25,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 9,
+   "label": "App-parkeren verdubbelt",
+   "effects": [
+    {
+     "target": "appShare",
+     "op": "add",
+     "value": 0.05
+    }
+   ]
+  },
+  {
+   "quarter": 10,
+   "label": "Autobezit stijgt",
+   "effects": [
+    {
+     "target": "wijken.centrum.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.kopbrug.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.oudwest.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.noord.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.plaswijk.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.pleinzuid.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.kuipwijk.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.rand.carOwn",
+     "op": "mul",
+     "value": 1.02
+    }
+   ]
+  },
+  {
+   "quarter": 11,
+   "label": "Wedstrijddag Kuipwijk",
+   "effects": [
+    {
+     "target": "wijken.kuipwijk.visitors",
+     "op": "mul",
+     "value": 2.0,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 12,
+   "label": "Zomercarnaval",
+   "effects": [
+    {
+     "target": "wijken.centrum.visitors",
+     "op": "mul",
+     "value": 1.25,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 15,
+   "label": "Wedstrijddag Kuipwijk",
+   "effects": [
+    {
+     "target": "wijken.kuipwijk.visitors",
+     "op": "mul",
+     "value": 2.0,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 16,
+   "label": "Havenfestival",
+   "effects": [
+    {
+     "target": "wijken.centrum.visitors",
+     "op": "mul",
+     "value": 1.25,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 18,
+   "label": "Autobezit stijgt",
+   "effects": [
+    {
+     "target": "wijken.centrum.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.kopbrug.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.oudwest.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.noord.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.plaswijk.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.pleinzuid.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.kuipwijk.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.rand.carOwn",
+     "op": "mul",
+     "value": 1.02
+    }
+   ]
+  },
+  {
+   "quarter": 19,
+   "label": "Wedstrijddag Kuipwijk",
+   "effects": [
+    {
+     "target": "wijken.kuipwijk.visitors",
+     "op": "mul",
+     "value": 2.0,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 20,
+   "label": "Marathon",
+   "effects": [
+    {
+     "target": "wijken.centrum.visitors",
+     "op": "mul",
+     "value": 1.25,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 20,
+   "label": "Bezuinigingsronde",
+   "effects": [
+    {
+     "target": "yearBudget",
+     "op": "add",
+     "value": -1500000
+    }
+   ]
+  },
+  {
+   "quarter": 21,
+   "label": "Havenfestival",
+   "effects": [
+    {
+     "target": "wijken.havenkwartier.visitors",
+     "op": "mul",
+     "value": 5,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 23,
+   "label": "Wedstrijddag Kuipwijk",
+   "effects": [
+    {
+     "target": "wijken.kuipwijk.visitors",
+     "op": "mul",
+     "value": 2.0,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 24,
+   "label": "Zomercarnaval",
+   "effects": [
+    {
+     "target": "wijken.centrum.visitors",
+     "op": "mul",
+     "value": 1.25,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 26,
+   "label": "Autobezit stijgt",
+   "effects": [
+    {
+     "target": "wijken.centrum.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.kopbrug.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.oudwest.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.noord.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.plaswijk.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.pleinzuid.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.kuipwijk.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.rand.carOwn",
+     "op": "mul",
+     "value": 1.02
+    }
+   ]
+  },
+  {
+   "quarter": 27,
+   "label": "Wedstrijddag Kuipwijk",
+   "effects": [
+    {
+     "target": "wijken.kuipwijk.visitors",
+     "op": "mul",
+     "value": 2.0,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 28,
+   "label": "Havenfestival",
+   "effects": [
+    {
+     "target": "wijken.centrum.visitors",
+     "op": "mul",
+     "value": 1.25,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 31,
+   "label": "Wedstrijddag Kuipwijk",
+   "effects": [
+    {
+     "target": "wijken.kuipwijk.visitors",
+     "op": "mul",
+     "value": 2.0,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 32,
+   "label": "Marathon",
+   "effects": [
+    {
+     "target": "wijken.centrum.visitors",
+     "op": "mul",
+     "value": 1.25,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 34,
+   "label": "Autobezit stijgt",
+   "effects": [
+    {
+     "target": "wijken.centrum.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.kopbrug.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.oudwest.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.noord.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.plaswijk.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.pleinzuid.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.kuipwijk.carOwn",
+     "op": "mul",
+     "value": 1.02
+    },
+    {
+     "target": "wijken.rand.carOwn",
+     "op": "mul",
+     "value": 1.02
+    }
+   ]
+  },
+  {
+   "quarter": 35,
+   "label": "Wedstrijddag Kuipwijk",
+   "effects": [
+    {
+     "target": "wijken.kuipwijk.visitors",
+     "op": "mul",
+     "value": 2.0,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 36,
+   "label": "Zomercarnaval",
+   "effects": [
+    {
+     "target": "wijken.centrum.visitors",
+     "op": "mul",
+     "value": 1.25,
+     "durationQuarters": 1
+    }
+   ]
+  },
+  {
+   "quarter": 39,
+   "label": "Wedstrijddag Kuipwijk",
+   "effects": [
+    {
+     "target": "wijken.kuipwijk.visitors",
+     "op": "mul",
+     "value": 2.0,
+     "durationQuarters": 1
+    }
+   ]
+  }
+ ]
+}

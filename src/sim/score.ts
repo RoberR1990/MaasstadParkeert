@@ -30,7 +30,8 @@ export function evaluate(s: GameState, c: Config, g: GlobalMetrics) {
   const pb = sc.bezoekerParts;
   const assets = W.flatMap(w => w.garages);
   const garageSat = assets.length ? assets.reduce((a, x) => a + (x.closed ? 0 : 100 * (1 - Math.min(1, x.backlog / c.model.maintenance.closeAt))), 0) / assets.length : 100;
-  const bezoeker = clamp(pb.search * searchSat(wsum(w => w.m.search, w => sc.visitorWeights[w.id] ?? 0), c)
+  const tariffSatV = wsum(w => (w.paid ? sc.tariffSat[w.tariff] : 100), w => sc.visitorWeights[w.id] ?? 0);
+  const bezoeker = clamp(pb.search * searchSat(wsum(w => w.m.search, w => sc.visitorWeights[w.id] ?? 0), c) + (pb.tariff ?? 0) * tariffSatV
     + pb.storing * 100 * (1 - Math.min(1, g.malfEff * sc.storingSens)) + pb.garage * garageSat, 0, 100);
 
   const removed = W.reduce((a, w) => a + w.removedStreet, 0);
@@ -42,7 +43,11 @@ export function evaluate(s: GameState, c: Config, g: GlobalMetrics) {
   const budgetSat = s.fonds >= 0 ? 70 + 30 * Math.min(1, s.fonds / sc.fondsHappy) : 40 * Math.max(0, 1 + s.fonds / sc.fondsNegScale);
   const incidentSat = clamp(100 - sc.incidentPerClosed * g.closedCount - sc.incidentPerNew * g.newClosures, 0, 100);
   const klachtSat = 100 * (1 - Math.min(1, s.klantBacklog / sc.klantBad));
-  const wethouder = clamp(pw.budget * budgetSat + pw.incident * incidentSat + pw.klacht * klachtSat - intro * sc.introPenaltyWethouder, 0, 100);
+  // "graaitarieven": the council dislikes a city that runs 'hoog' on most paid street spots; penalty grows linearly above graaiFree
+  const paidSp = W.filter(w => w.paid).reduce((a, w) => a + w.streetSpots, 0), hoogSp = W.filter(w => w.paid && w.tariff === 'hoog').reduce((a, w) => a + w.streetSpots, 0);
+  const hoogShare = paidSp > 0 ? hoogSp / paidSp : 0;
+  const graaiPen = sc.graaiMax ? sc.graaiMax * clamp((hoogShare - sc.graaiFree) / (1 - sc.graaiFree), 0, 1) : 0;
+  const wethouder = clamp(pw.budget * budgetSat + pw.incident * incidentSat + pw.klacht * klachtSat - intro * sc.introPenaltyWethouder - graaiPen, 0, 100);
 
   const fietser = bikeSat;
   const persona = { bewoner, ondernemer, bezoeker, fietser, stad, wethouder };

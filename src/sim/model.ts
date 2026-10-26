@@ -179,8 +179,9 @@ function simulate(s: GameState, c: Config, rng: Rng) {
 
   // rule 4: compliance from scan coverage
   const paidSpots = sum(W.filter(w => w.paid).map(w => w.streetSpots));
-  const scanEff = Math.min(s.scanautos, s.staff.handhaver); // no enforcers => scan car does nothing
+  const scanEff = Math.min(s.scanautos, s.staff.handhaver / c.assets.scanauto.staff.handhaver); // scan cars without enforcers do nothing
   const dekking = paidSpots > 0 ? scanEff * c.assets.scanauto.coverage / paidSpots : 1;
+  // coverage above 100% buys nothing: extra scan cars only cost money (capped here, and again in the fines below)
   const nalevingPaid = m.compliance.base + m.compliance.gain * Math.min(1, dekking);
   // rule 5: malfunctions (automaten matter less as app share grows)
   const malf = m.malfunction.base + m.malfunction.k * Math.max(0, 1 - rM);
@@ -236,7 +237,7 @@ function simulate(s: GameState, c: Config, rng: Rng) {
     if (w.paid) {
       rev += visOnStreet * m.paidHoursPerSpotQuarter * c.policy.tariffEur[w.tariff] * nal * payable * (1 - malfEff);
       rev += Math.min(d.res, streetEff) * m.permitFeePerQuarter;
-      violating += visOnStreet * (1 - nal);
+      violating += visOnStreet * (1 - nal) * (m.tariffFineMult?.[w.tariff] ?? 1); // higher tariff -> bigger fines -> more objections
       naSum += nal * w.streetSpots; naW += w.streetSpots;
     }
     Object.assign(w.m, { demand, supply, bez, search: searchTime(bez, c), revenue: rev, visShare, naleving: nal });

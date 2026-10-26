@@ -60,11 +60,11 @@
   ]
  },
  "finance": {
-  "startFonds": 30000000,
+  "startFonds": 28000000.0,
   "reserveCap": 5000000,
   "yearBudget": 18000000,
   "budgetEvery": 4,
-  "fixedOverheadPerYear": 33000000,
+  "fixedOverheadPerYear": 24000000.0,
   "wageInflation": 0.015,
   "allowDebtBuild": false,
   "repairCost": {
@@ -74,7 +74,7 @@
  },
  "assets": {
   "garage": {
-   "capex": 12000000,
+   "capex": 9000000.0,
    "time": 4,
    "opex": 250000,
    "cap": 400,
@@ -103,7 +103,7 @@
    }
   },
   "stalling": {
-   "capex": 3000000,
+   "capex": 2500000.0,
    "time": 3,
    "opex": 100000,
    "cap": 1000,
@@ -146,7 +146,7 @@
   },
   "hireDelay": 2,
   "maxHirePerRolePerQuarter": 3,
-  "attritionPerQuarter": 0.014,
+  "attritionPerQuarter": 0.019,
   "startBuffer": 1.1,
   "moodStart": 70,
   "fireMoodHit": 6,
@@ -159,12 +159,12 @@
   "tariffEur": {
    "laag": 2,
    "midden": 4,
-   "hoog": 6
+   "hoog": 5
   },
   "tariffDemand": {
    "laag": 0.95,
    "midden": 0.85,
-   "hoog": 0.7
+   "hoog": 0.3
   },
   "permitFactor": {
    "ruim": 1.0,
@@ -231,7 +231,7 @@
   "netheidPerRatio": 80,
   "netheidRatioCap": 1.25,
   "bikeGrowthPerYear": 0.03,
-  "paidHoursPerSpotQuarter": 300,
+  "paidHoursPerSpotQuarter": 100,
   "garageRevenuePerSpotQuarter": 650,
   "permitFeePerQuarter": 55,
   "finesPerViolatingSpot": 12,
@@ -244,7 +244,12 @@
    "centrum": 1.0,
    "kopbrug": 0.5
   },
-  "netheidSpeed": 0.25
+  "netheidSpeed": 0.25,
+  "tariffFineMult": {
+   "laag": 1,
+   "midden": 1.2,
+   "hoog": 1.8
+  }
  },
  "score": {
   "weights": {
@@ -293,8 +298,9 @@
    "tariff": 0.4
   },
   "bezoekerParts": {
-   "search": 0.5,
-   "storing": 0.25,
+   "search": 0.4,
+   "tariff": 0.15,
+   "storing": 0.2,
    "garage": 0.25
   },
   "stadParts": {
@@ -318,9 +324,11 @@
   "klantPenaltyMax": 25,
   "introPenaltyBewoner": 5,
   "introPenaltyWethouder": 4,
-  "negFondsPenaltyPerQuarter": 60,
+  "negFondsPenaltyPerQuarter": 40,
   "backlogPenaltyPerPoint": 6,
-  "scoreScale": 100
+  "scoreScale": 100,
+  "graaiMax": 30,
+  "graaiFree": 0.3
  },
  "start": {
   "teamMood": 70,
@@ -329,7 +337,7 @@
    "centrum": {
     "pop": 9000,
     "carOwn": 0.18,
-    "visitors": 4800,
+    "visitors": 6000,
     "streetSpots": 2600,
     "garages": [
      600,
