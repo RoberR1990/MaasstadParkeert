@@ -36,10 +36,15 @@
         "time": 1
       },
       "stalling": {
-        "time": 1
+        "time": 1,
+        "capex": 1000000,
+        "opex": 60000
       },
       "pr": {
         "onlyIn": "noord"
+      },
+      "automaat": {
+        "batch": 5
       }
     },
     "staff": {

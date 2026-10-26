@@ -4,92 +4,93 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
 <title>Maasstad Parkeert</title>
-<meta name="description" content="Stijlproef: Maasstad Parkeert als 3D-diorama." />
+<meta name="description" content="Maasstad Parkeert: serious game over parkeerbeheer in Rotterdam." />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%232f6f7e'/%3E%3Ctext x='16' y='23' font-size='20' font-family='sans-serif' font-weight='700' text-anchor='middle' fill='%23fff6e4'%3EP%3C/text%3E%3C/svg%3E" />
 </head>
 <body>
 <canvas id="gl" aria-label="Diorama van Maasstad"></canvas>
 
 <div id="app" class="hidden">
+  <div id="labels" class="labels"></div>
+  <div id="wijkchips" class="labels"></div>
+
   <!-- top-left: fonds + kwartaal -->
   <div id="topleft" class="cluster">
-    <div class="panel pill fonds" data-tip="Parkeerfonds|Hier gaat elke euro uit die je bouwt, én elke euro beheer die daarna doorloopt.">
+    <div class="panel pill fonds" data-tip="Parkeerfonds|Het geld dat je mag uitgeven. Alles wat je bouwt of aanneemt komt hier vanaf. Houd het boven nul.">
       <div class="coin" id="fonds-coin"></div>
       <div class="stack">
         <span class="lbl">Parkeerfonds</span>
-        <span class="num" id="fonds">€ 120,0 M</span>
+        <span class="num" id="fonds">0,00 M€</span>
       </div>
       <span class="delta" id="fonds-delta"></span>
     </div>
-    <div class="panel pill kwartaal" data-tip="Tijd|Een kwartaal duurt ongeveer 40 seconden. Elk kwartaal komt er geld bij én gaat er beheer af.">
+    <div class="panel pill kwartaal" data-tip="Kwartaal|Je speelt vier kwartalen. Eerst plan je, dan druk je op Volgend kwartaal en zie je wat er gebeurt.">
       <div class="ringwrap"><svg viewBox="0 0 36 36" class="qring"><circle cx="18" cy="18" r="15" class="qbg"/><circle cx="18" cy="18" r="15" class="qfg" id="qfg" pathLength="100"/></svg><span id="qnum">1</span></div>
-      <div class="stack"><span class="lbl">Kwartaal</span><span class="num sm" id="kwartaal">2026</span></div>
-    </div>
-    <div class="panel chip upkeep" id="upkeep" data-tip="Beheerkosten|Wie bouwt, betaalt elk jaar mee: schoonmaak, onderhoud, monteurs.">
-      <span id="upkeep-ico"></span><span id="upkeep-txt">Beheer −0,00 M€ / jr</span>
+      <div class="stack"><span class="lbl" id="kwartaal-lbl">Kwartaal</span><span class="num sm" id="kwartaal">Jaar 1</span></div>
     </div>
   </div>
 
+  <!-- top-center: the goal, always visible -->
+  <div id="goalbar" class="panel goalbar" aria-label="Doel">
+    <span class="g-title">Doel</span>
+    <div class="g-chip" id="g-blij" data-tip="Rotterdammert|De Rotterdammert is de gemiddelde tevredenheid van zes groepen. Je wilt eindigen op 70 of hoger."><i class="g-st"></i><span class="g-txt"></span></div>
+    <div class="g-chip" id="g-fonds" data-tip="Fonds|Je mag niet meer uitgeven dan je hebt. Aan het eind van het jaar moet het fonds nul of hoger zijn."><i class="g-st"></i><span class="g-txt"></span></div>
+    <div class="g-chip" id="g-mara" data-tip="Marathon zonder chaos|In kwartaal 4 komt de Marathon. Dan mag zoeken in het Centrum maximaal 9 minuten duren."><i class="g-st"></i><span class="g-txt"></span></div>
+  </div>
+
   <!-- top-right: Rotterdammert centraal -->
-  <div id="topright" class="panel mood" data-tip="Rotterdammert centraal|Het gemiddelde van zes groepen. Als zoeken lang duurt, wordt de Rotterdammert chagrijnig.">
+  <div id="topright" class="panel mood" data-tip="Rotterdammert centraal|Het gemiddelde van zes groepen Rotterdammers. Hoe langer zoeken duurt, hoe chagrijniger.">
     <button class="face-wrap" id="face-wrap" aria-label="Rotterdammert centraal: tik om uit te klappen"></button>
     <div class="mood-main">
       <div class="mood-head"><span class="lbl">Rotterdammert centraal</span></div>
-      <div class="mood-score"><span class="num big" id="mood-num">72</span><span class="mood-unit">Rotterdammert-score</span><span class="mood-word" id="mood-word">Tevreden</span></div>
+      <div class="mood-score"><span class="num big" id="mood-num">55</span><span class="mood-unit">Rotterdammert-score</span><span class="mood-word" id="mood-word">Twijfelend</span></div>
       <div class="say" id="say"><span id="say-text">Nou, effe zoeken…</span></div>
       <div class="meters" id="meters"></div>
     </div>
   </div>
 
-  <!-- top-center: event banner -->
+  <!-- event banner (Bokito / wedstrijd) -->
   <div id="banner" class="banner hidden"><div class="b-main"><b id="banner-title"></b><span id="banner-sub"></span></div><div class="b-count" id="banner-count"></div><button class="b-x" id="banner-x" aria-label="Stop evenement"></button></div>
 
-  <!-- bottom-left: parkeerdruk -->
-  <div id="pressure" class="panel pressure">
-    <button class="sheet-x" id="sheet-x" aria-label="Sluiten"></button>
-    <div class="p-head">
-      <span class="p-ico" id="p-ico"></span>
-      <span class="lbl">Parkeerdruk</span>
-      <span class="p-val" id="p-val">60%</span>
-    </div>
-    <div class="slider-wrap">
-      <input id="p-range" type="range" min="0" max="100" value="60" aria-label="Parkeerdruk" />
-      <div class="p-ticks"><span>Rustig</span><span>Druk</span><span>Overvol</span></div>
-    </div>
-    <div class="p-stats">
-      <div class="stat" data-tip="Zoekende auto's|Auto's die rondjes rijden omdat ze geen plek vinden. Dit is het kernprobleem van de stad."><span class="stat-ico" id="s-ico"></span><span class="stat-num" id="s-search">0</span><span class="stat-lbl">zoekend</span></div>
-      <div class="stat" data-tip="Gemiddelde zoektijd|Hoe lang je gemiddeld rondjes rijdt voor een plek."><span class="stat-ico" id="t-ico"></span><span class="stat-num" id="s-time">2</span><span class="stat-lbl">min zoeken</span></div>
-      <div class="stat" data-tip="Bezetting straat|Hoeveel van de straatplekken bezet is."><span class="stat-ico" id="o-ico"></span><span class="stat-num" id="s-occ">0%</span><span class="stat-lbl">vol</span></div>
-    </div>
+  <!-- left rail: beleid / team -->
+  <div id="rail" class="rail">
+    <button class="panel rail-btn" id="btn-beleid" data-panel="beleid" data-tip="Beleid|Bepaal per wijk of parkeren betaald is en hoe duur."><span id="ico-beleid"></span><span class="rb-t">Beleid</span></button>
+    <button class="panel rail-btn" id="btn-team" data-panel="team" data-tip="Team|Neem mensen aan. Garages, automaten en scanauto's hebben mensen nodig."><span id="ico-team"></span><span class="rb-t">Team</span></button>
   </div>
+  <div id="sidepanel" class="panel sidepanel hidden"></div>
 
-  <!-- bottom-center: toolbar -->
+  <!-- bottom-left: the plan of this quarter -->
+  <div id="plan" class="panel plan"></div>
+
+  <!-- bottom-center: build bar -->
+  <div id="hint" class="hint hidden"><span id="hint-text"></span><button id="btn-cancel" class="btn cancel">Annuleer</button></div>
   <div id="toolbar" class="panel toolbar" role="toolbar" aria-label="Bouwen"></div>
+  <div id="playbar" class="playbar hidden"><span id="play-lbl">Kwartaal 1 loopt…</span><button class="btn" id="btn-skip">Sla over</button></div>
 
-  <!-- bottom-right: time / weather / sound / events -->
+  <!-- bottom-right: time / weather / sound -->
   <div id="sys" class="cluster sys">
-    <button class="panel round only-mobile" id="btn-pressure" data-tip="Parkeerdruk|Open de schuif voor parkeerdruk." aria-label="Parkeerdruk"></button>
-    <div class="panel pill clock" id="clock" data-tip="Dag en nacht|Klik om de tijd te pauzeren of te laten lopen.">
+    <div class="panel pill clock" id="clock" data-tip="Dag en nacht|Tijdens een kwartaal loopt de dag door. Tijdens het plannen staat de klok stil.">
       <span id="clock-ico"></span>
-      <span class="num sm" id="clock-time">10:00</span>
+      <span class="num sm" id="clock-time">11:00</span>
       <span class="pp" id="clock-pp"></span>
     </div>
-    <button class="panel round" id="btn-labels" data-tip="Namen|Toon de namen van alle bekende plekken. Tik of wijs een plek aan voor uitleg." aria-label="Namen tonen"></button>
-    <button class="panel round" id="btn-event" data-tip="Evenement|Start een wedstrijddag of een ontsnapt dier." aria-label="Evenement"></button>
-    <button class="panel round" id="btn-rain" data-tip="Regen|Zet een bui aan of uit." aria-label="Regen"></button>
-    <button class="panel round" id="btn-mute" data-tip="Geluid|Geluid aan of uit (M)." aria-label="Geluid"></button>
+    <button class="panel round hidden" id="btn-event" aria-label="Evenement"></button>
+    <button class="panel round" id="btn-labels" data-cap="Namen" data-tip="Namen|Toon de namen van bekende plekken. Tik of wijs een plek aan voor uitleg." aria-label="Namen tonen"></button>
+    <button class="panel round" id="btn-rain" data-cap="Regen" data-tip="Regen|Zet een bui aan of uit." aria-label="Regen"></button>
+    <button class="panel round" id="btn-mute" data-cap="Geluid" data-tip="Geluid|Geluid aan of uit (M)." aria-label="Geluid"></button>
   </div>
   <div id="event-menu" class="panel event-menu hidden">
     <button class="ev" data-ev="wedstrijd"><span class="ev-ico" id="ev-ico1"></span><span><b>Wedstrijddag in De Kuip</b><i>Drukte, fluitjes, vuurwerk van lampen</i></span></button>
     <button class="ev" data-ev="gorilla"><span class="ev-ico" id="ev-ico2"></span><span><b>Bokito ontsnapt!</b><i>Een aap op straat. Rij voorzichtig.</i></span></button>
   </div>
 
-  <div id="hint" class="hint hidden"></div>
-  <div id="labels" class="labels"></div>
   <div id="toast" class="toast hidden"></div>
   <div id="cardlayer" class="cardlayer"></div>
   <div id="floaters"></div>
 </div>
+
+<!-- afrekening / eindscherm -->
+<div id="modal" class="modal hidden"></div>
 
 <!-- tutorial -->
 <div id="spot" class="spot hidden"></div>
@@ -99,12 +100,13 @@
     <div class="tut-name"><b>Ria van Beheer</b><span>Beheerder Parkeren</span></div>
     <p id="tut-text"></p>
     <div class="tut-foot">
-      <div class="dots" id="tut-dots"><i></i><i></i><i></i></div>
+      <div class="dots" id="tut-dots"><i></i><i></i><i></i><i></i></div>
       <button class="btn ghost" id="tut-skip">Overslaan</button>
       <button class="btn primary" id="tut-next">Volgende</button>
     </div>
   </div>
 </div>
+<div id="tut-arrow" class="tut-arrow hidden">▼</div>
 
 <!-- title screen -->
 <div id="title" class="title">
@@ -117,12 +119,12 @@
   </div>
   <div class="title-foot">
     <button class="btn play" id="btn-play"><span id="play-ico"></span><span>Spelen</span></button>
-    <p class="fine">Een serious game voor Parkeren &amp; Stadsbeheer · stijlproef ronde 2</p>
+    <p class="fine">Een serious game voor Parkeren &amp; Stadsbeheer · Jaar 1 · ongeveer vijf minuten</p>
   </div>
 </div>
 
 <div id="tooltip" class="tooltip"><b></b><span></span></div>
-<div id="loading" class="loading"><div class="spinner"></div><span>Maasstad wordt opgebouwd…</span></div>
+<div id="loading" class="loading"><div class="spinner"></div></div>
 <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

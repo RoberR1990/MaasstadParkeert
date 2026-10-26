@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { FlatBuilder, GeoBuilder } from './geo';
 import { Graph, LAND_I, LAND_N, LAND_S, Pt, REdge, RNode, pointInPoly } from './map';
 import { COL } from './palette';
-import { MARK_Y, ROAD_Y, TILE_X, TILE_Z0, TILE_Z1, WATER_Y, Z_N, Z_S } from './config';
+import { MARK_Y, ROAD_Y, TILE_X0, TILE_X1, TILE_Z0, TILE_Z1, WATER_Y, Z_N, Z_S } from './config';
 import { mulberry32 } from './util';
 
 // ---------------------------------------------------------------- land
@@ -45,7 +45,7 @@ export function buildLand(): { top: THREE.Mesh; sides: THREE.Mesh } {
     for (let i = 0; i < n; i++) {
       const a = pts[i], b = pts[(i + 1) % n];
       const mx = (a[0] + b[0]) / 2, mz = (a[1] + b[1]) / 2;
-      const outer = Math.abs(mx) > TILE_X - 1.2 || mz < TILE_Z0 + 1.2 || mz > TILE_Z1 - 1.2 || (Math.abs(a[0]) > TILE_X - 1.2 && Math.abs(b[0]) > TILE_X - 1.2) || (Math.abs(mz) > 84 && (mz < 0 ? mz < TILE_Z0 + 9 : mz > TILE_Z1 - 9));
+      const outer = mx > TILE_X1 - 1.2 || mx < TILE_X0 + 1.2 || mz < TILE_Z0 + 1.2 || mz > TILE_Z1 - 1.2 || ((a[0] > TILE_X1 - 1.2 && b[0] > TILE_X1 - 1.2) || (a[0] < TILE_X0 + 1.2 && b[0] < TILE_X0 + 1.2)) || (Math.abs(mz) > 84 && (mz < 0 ? mz < TILE_Z0 + 9 : mz > TILE_Z1 - 9));
       const layers = outer ? OUTER : QUAY;
       const sh = 0.93 + rng() * 0.12;
       for (let k = 0; k < layers.length - 1; k++) {
@@ -89,7 +89,7 @@ function mergeNonIndexed(gs: THREE.BufferGeometry[]) {
 }
 
 // ---------------------------------------------------------------- water
-export const WATER_X0 = -TILE_X, WATER_X1 = TILE_X, WATER_Z0 = Z_N - 1.5, WATER_Z1 = Z_S + 1.5;
+export const WATER_X0 = TILE_X0, WATER_X1 = TILE_X1, WATER_Z0 = Z_N - 1.5, WATER_Z1 = Z_S + 1.5;
 const RES = 0.5;
 
 /** shore distance texture: R = distance to land (0..10 units) */
@@ -133,8 +133,7 @@ export function waterSkirts() {
   const gb: number[] = [], cc: number[] = [];
   const c = new THREE.Color();
   const rings: [number, string][] = [[WATER_Y, '#2f7a84'], [-3, '#25606c'], [-11, '#1a3a48']];
-  for (const sx of [-1, 1]) {
-    const x = sx * TILE_X;
+  for (const x of [TILE_X0, TILE_X1]) {
     for (let k = 0; k < rings.length - 1; k++) {
       const [y0, c0] = rings[k], [y1, c1] = rings[k + 1];
       const v = (z: number, y: number, s: string) => { gb.push(x, y, z); c.set(s); cc.push(c.r, c.g, c.b); };

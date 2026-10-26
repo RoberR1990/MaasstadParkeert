@@ -3,6 +3,7 @@ import { icon } from './icons';
 import { ROTTERDAMMERT_SVG } from './avatar';
 import { TOOLS, ToolId } from './structures';
 import { clamp, damp, lerp } from './util';
+import { fmtM, moodSet, moodWord } from './copy';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -25,21 +26,20 @@ const mix3 = (a: string, b: string, c: string, t: number) => (t < 0.5 ? mix(a, b
 
 export class Hud {
   onTool: (id: ToolId | null) => void = () => {};
-  onPressure: (v: number) => void = () => {};
   onClock: () => void = () => {};
   onRain: () => void = () => {};
   onMute: () => void = () => {};
   onSound: (kind: 'click' | 'tick' | 'slider', v?: number) => void = () => {};
   onEvent: (id: 'wedstrijd' | 'gorilla' | null) => void = () => {};
   onLabels: () => void = () => {};
-  private sayT = 0; private sayLast = '';
+  private sayCat: string[] | null = null; private sayT = 0; private sayLast = '';
   private eventOn = false;
 
-  private fondsShown = 120;
+  private fondsShown = 0;
   private fondsAnim: number | null = null;
   private moodNow = 0;
   private moodTarget = 0;
-  private happyNow = 70;
+  private happyNow = 70; private shownHappy = 70;
   private personaEls = new Map<string, { bar: HTMLElement; val: number; cur: number }>();
   private toolEls = new Map<ToolId, HTMLButtonElement>();
   private tip = $('tooltip');
@@ -50,11 +50,6 @@ export class Hud {
 
   constructor() {
     $('fonds-coin').innerHTML = icon('coin');
-    $('p-ico').innerHTML = icon('car');
-    $('s-ico').innerHTML = icon('search');
-    $('t-ico').innerHTML = icon('clock');
-    $('o-ico').innerHTML = icon('pin');
-    $('upkeep-ico').innerHTML = icon('sparkle');
     $('title-badge').textContent = 'P';
     $('play-ico').innerHTML = icon('play');
     $('btn-rain').innerHTML = icon('rain');
@@ -64,14 +59,10 @@ export class Hud {
     $('face-wrap').innerHTML = ROTTERDAMMERT_SVG;
     $('btn-event').innerHTML = icon('flag');
     $('btn-labels').innerHTML = icon('tag');
-    $('btn-pressure').innerHTML = icon('sliders');
-    $('sheet-x').innerHTML = icon('close');
     $('banner-x').innerHTML = icon('close');
     $('ev-ico1').innerHTML = icon('city');
     $('ev-ico2').innerHTML = icon('search');
     $('face-wrap').addEventListener('click', () => { if (matchMedia('(max-width: 700px)').matches) { $('topright').classList.toggle('open'); this.onSound('click'); } });
-    $('btn-pressure').addEventListener('click', () => { $('pressure').classList.add('open'); this.onSound('click'); });
-    $('sheet-x').addEventListener('click', () => { $('pressure').classList.remove('open'); this.onSound('click'); });
     $('btn-labels').addEventListener('click', () => { this.onSound('click'); this.onLabels(); });
     $('btn-event').addEventListener('click', () => {
       this.onSound('click');
@@ -99,6 +90,7 @@ export class Hud {
       b.className = 'tool';
       b.dataset.tool = t.id;
       b.dataset.tip = `${t.label}|${t.blurb}`;
+      b.setAttribute('aria-label', t.label);
       b.innerHTML = `<span class="t-key">${t.key}</span><span class="t-ico">${icon(t.id)}</span><span class="t-name"><span class="long">${t.label}</span><span class="short">${t.short}</span></span><span class="t-cost">${icon('coin')}${t.costLabel}</span>`;
       b.addEventListener('click', () => { this.onSound('click'); this.onTool(b.classList.contains('selected') ? null : t.id); });
       b.addEventListener('pointerenter', () => this.onSound('tick'));
@@ -106,17 +98,14 @@ export class Hud {
       this.toolEls.set(t.id, b);
     }
 
-    const range = $<HTMLInputElement>('p-range');
-    range.addEventListener('input', () => { const v = +range.value / 100; this.onPressure(v); this.onSound('slider', v); });
     $('clock').addEventListener('click', () => { this.onSound('click'); this.onClock(); });
     $('btn-rain').addEventListener('click', () => { this.onSound('click'); this.onRain(); });
     $('btn-mute').addEventListener('click', () => { this.onMute(); this.onSound('click'); });
     for (const el of document.querySelectorAll('.panel.round, .pill.clock')) el.addEventListener('pointerenter', () => this.onSound('tick'));
 
-    // tooltips
-    document.addEventListener('pointerover', (e) => {
-      const el = (e.target as HTMLElement).closest?.('[data-tip]') as HTMLElement | null;
-      if (!el) return;
+    // tooltips: hover on desktop, long-press (0.45 s) on touch
+    const showTip = (el: HTMLElement) => {
+      if (document.body.classList.contains('tutorial-on')) return;
       const [title, text] = (el.dataset.tip ?? '').split('|');
       (this.tip.querySelector('b') as HTMLElement).textContent = title;
       (this.tip.querySelector('span') as HTMLElement).textContent = text ?? '';
@@ -124,19 +113,32 @@ export class Hud {
       this.tip.classList.add('show');
       const tw = this.tip.offsetWidth;
       const x = clamp(r.left + r.width / 2, tw / 2 + 8, window.innerWidth - tw / 2 - 8);
-      const above = r.top > 160;
+      const hintUp = el.closest('.toolbar') && !$('hint').classList.contains('hidden') ? 56 : 0;
+      const above = r.top > 190;
       this.tip.style.left = `${x}px`;
-      this.tip.style.top = above ? `${r.top - this.tip.offsetHeight - 12}px` : `${r.bottom + 12}px`;
+      this.tip.style.top = above ? `${r.top - this.tip.offsetHeight - 12 - hintUp}px` : `${r.bottom + 12}px`;
+    };
+    let lp = 0;
+    document.addEventListener('pointerover', (e) => {
+      if ((e as PointerEvent).pointerType === 'touch') return;
+      const el = (e.target as HTMLElement).closest?.('[data-tip]') as HTMLElement | null;
+      if (el) showTip(el);
     });
     document.addEventListener('pointerout', (e) => {
-      const el = (e.target as HTMLElement).closest?.('[data-tip]');
-      if (el) this.tip.classList.remove('show');
+      if ((e as PointerEvent).pointerType === 'touch') return;
+      if ((e.target as HTMLElement).closest?.('[data-tip]')) this.tip.classList.remove('show');
     });
-    this.setFunds(120, false);
-    this.setPressureUi(0.6, 0, 2, 0.3);
+    document.addEventListener('pointerdown', (e) => {
+      if ((e as PointerEvent).pointerType !== 'touch') return;
+      const el = (e.target as HTMLElement).closest?.('[data-tip]') as HTMLElement | null;
+      window.clearTimeout(lp);
+      if (el) lp = window.setTimeout(() => { showTip(el); window.setTimeout(() => this.tip.classList.remove('show'), 2600); }, 450);
+    });
+    for (const ev of ['pointerup', 'pointercancel', 'pointermove'] as const) document.addEventListener(ev, (e) => { if (ev !== 'pointermove' || (e as PointerEvent).pointerType === 'touch') window.clearTimeout(lp); });
+    this.setFunds(0, false);
   }
 
-  fmtFunds(v: number) { return `€ ${v.toLocaleString('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} M`; }
+  fmtFunds(v: number) { return fmtM(v); }
 
   setFunds(v: number, animate = true) {
     const from = this.fondsShown;
@@ -157,41 +159,25 @@ export class Hud {
     this.fondsAnim = requestAnimationFrame(step);
   }
 
-  setDelta(text: string) {
+  setDelta(text: string, pos = false) {
     const d = $('fonds-delta');
     d.textContent = text;
+    d.classList.toggle('pos', pos); d.classList.toggle('neg', !pos);
     d.classList.add('show');
     window.setTimeout(() => d.classList.remove('show'), 3500);
   }
 
-  setQuarter(q: number, year: number, progress: number) {
-    $('qnum').textContent = String((q % 4) + 1);
-    $('kwartaal').textContent = String(year);
-    $('qfg').style.strokeDashoffset = String(100 - progress * 100);
-  }
-
-  setUpkeep(perYear: number) {
-    const el = $('upkeep');
-    if (perYear <= 0) { el.classList.remove('show'); return; }
-    $('upkeep-txt').textContent = `Beheer −${perYear.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} M€ / jr`;
-    el.classList.add('show');
+  setQuarter(q: number, total: number, label: string, sub: string) {
+    $('qnum').textContent = String(Math.min(q + 1, total));
+    $('kwartaal').textContent = sub;
+    $('kwartaal-lbl').textContent = label;
+    $('qfg').style.strokeDashoffset = String(100 - (q / total) * 100);
   }
 
   setPersonas(v: Record<PersonaId, number>, overall: number) {
     for (const p of PERSONAS) this.personaEls.get(p.id)!.val = v[p.id];
     this.moodTarget = clamp(1 - overall / 100);
     this.happyNow = overall;
-  }
-
-  setPressureUi(p: number, searching: number, minutes: number, occ: number) {
-    const pct = Math.round(p * 100);
-    $('p-val').textContent = `${pct}%`;
-    $('p-val').style.background = mix3('#00811f', '#e8b43e', '#e2735a', p);
-    ($('p-range') as HTMLInputElement).value = String(pct);
-    const s = $('s-search');
-    if (s.textContent !== String(searching)) { s.textContent = String(searching); s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop'); }
-    $('s-time').textContent = minutes.toLocaleString('nl-NL', { maximumFractionDigits: 0 });
-    $('s-occ').textContent = `${Math.round(occ * 100)}%`;
   }
 
   setClock(hour: number, paused: boolean, night: number) {
@@ -240,16 +226,25 @@ export class Hud {
   setAffordable(funds: number) {
     for (const [k, el] of this.toolEls) el.classList.toggle('disabled', TOOLS[k].cost > funds);
   }
+  /** brief message in the hint bar (explains an invalid tap) */
+  warn(text: string) {
+    const h = $('hint');
+    $('hint-text').textContent = text; h.classList.remove('hidden'); h.classList.add('warn');
+    window.clearTimeout(this.warnT);
+    this.warnT = window.setTimeout(() => { h.classList.remove('warn'); this.onHintExpire(); }, 3200);
+  }
+  onHintExpire: () => void = () => {};
+  private warnT = 0;
   shakeTool(id: ToolId) {
     const el = this.toolEls.get(id)!;
     el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
   }
   toolButton(id: ToolId) { return this.toolEls.get(id)!; }
 
-  hint(text: string | null) {
+  hint(text: string | null, cancel = false) {
     const h = $('hint');
     if (!text) { h.classList.add('hidden'); return; }
-    h.textContent = text; h.classList.remove('hidden');
+    $('hint-text').textContent = text; h.classList.remove('hidden'); h.classList.toggle('has-cancel', cancel);
   }
 
   floater(x: number, y: number, text: string, cls = 'neg', withCoin = true) {
@@ -271,13 +266,15 @@ export class Hud {
       e.bar.style.width = `${clamp(e.cur, 3, 100)}%`;
       e.bar.style.background = mix3('#e2735a', '#f0c24a', '#00811f', clamp(e.cur / 100));
     }
-    const happy = (1 - m) * 100;
+    this.shownHappy = damp(this.shownHappy, this.happyNow, 3.0, dt);
+    const happy = this.shownHappy;
     $('mood-num').textContent = String(Math.round(happy));
-    $('mood-word').textContent = happy > 78 ? 'Dolblij' : happy > 62 ? 'Tevreden' : happy > 46 ? 'Twijfelend' : happy > 30 ? 'Chagrijnig' : 'Woedend';
+    $('mood-word').textContent = moodWord(happy);
     this.sayT -= dt;
+    const set = moodSet(happy);
+    if (set !== this.sayCat) { this.sayCat = set; this.sayT = 0; }
     if (this.sayT <= 0) {
       this.sayT = 6.5;
-      const set = happy > 76 ? SAY.happy : happy > 60 ? SAY.good : happy > 44 ? SAY.mid : happy > 28 ? SAY.bad : SAY.mad;
       let line = set[Math.floor(Math.random() * set.length)];
       if (line === this.sayLast) line = set[(set.indexOf(line) + 1) % set.length];
       if (line !== this.sayLast) { this.sayLast = line; $('say-text').textContent = line; const sy = $('say'); sy.classList.remove('swap'); void sy.offsetWidth; sy.classList.add('swap'); }
@@ -322,10 +319,3 @@ export class Hud {
   }
 }
 
-const SAY = {
-  happy: ['Lekker hoor, meteen een plekkie!', 'Staat-ie! Zo doen we dat in Rotterdam.', 'Geen gezeur, gewoon parkeren. Heerlijk.'],
-  good: ['Gaat prima, hoor. Kan niet klagen.', 'Even doorrijden, dan heb ik \u2019m wel.', 'Mooi, mooi. Zo houden we het.'],
-  mid: ['Nou, effe zoeken\u2026', 'Straks maar te voet, volgens mij.', 'Dit wordt nog even rondjes draaien.'],
-  bad: ['Ik draai al twintig minuten rondjes, hoor!', 'Weer bezet. Echt waar?', 'Doe mij maar een plekkie, graag!'],
-  mad: ['Dit meen je toch niet?!', 'Ik sta zo in de krant, wacht maar!', 'Ik zoek me suf. Wie regelt dit?!'],
-};

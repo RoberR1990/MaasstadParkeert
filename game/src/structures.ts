@@ -4,22 +4,33 @@ import { GeoBuilder } from './geo';
 const PAD_H = 0.05;
 import { signTexture, screenTexture, radialTexture } from './tex';
 
-export type ToolId = 'garage' | 'automaat' | 'fiets';
+import { cfg, batchOf } from './session';
+import { TOOL_COPY, fmtPrice } from './copy';
+
+export type ToolId = 'garage' | 'automaat' | 'scanauto' | 'stalling';
 
 export interface ToolInfo {
   id: ToolId;
   label: string;
   short: string;
-  cost: number; // in M€
+  cost: number; // euro, from data/config.json
   costLabel: string;
-  upkeep: number; // M€ per year
+  upkeep: number; // euro per year
   blurb: string;
+  hint: string;
   key: string;
+  /** needs a bouwplek (plot) on the map; the scanauto needs a wijk instead */
+  placed: boolean;
 }
+const mk = (id: ToolId, short: string, key: string, placed: boolean): ToolInfo => {
+  const a = cfg.assets[id], n = batchOf(id);
+  return { id, label: TOOL_COPY[id].name, short, cost: a.capex * n, costLabel: fmtPrice(a.capex * n), upkeep: a.opex * n, blurb: TOOL_COPY[id].blurb, hint: TOOL_COPY[id].hint, key, placed };
+};
 export const TOOLS: Record<ToolId, ToolInfo> = {
-  garage: { id: 'garage', label: 'Garage', short: 'Garage', cost: 12, costLabel: '12 M€', upkeep: 0.25, blurb: 'Wijkgarage met 400 plekken. Haalt auto\'s van straat, maar kost elk jaar beheer.', key: '1' },
-  automaat: { id: 'automaat', label: 'Betaalautomaat', short: 'Automaat', cost: 0.015, costLabel: '15 k€', upkeep: 0.001, blurb: 'Betalen kan alleen als de automaat werkt. Zonder monteur gaat hij kapot.', key: '2' },
-  fiets: { id: 'fiets', label: 'Fietsenstalling', short: 'Fiets', cost: 3, costLabel: '3 M€', upkeep: 0.1, blurb: '1.000 bewaakte fietsplekken. Fietsers blij, de straat een stuk rustiger.', key: '3' },
+  garage: mk('garage', 'Garage', '1', true),
+  automaat: mk('automaat', 'Automaat', '2', true),
+  scanauto: mk('scanauto', 'Scanauto', '3', false),
+  stalling: mk('stalling', 'Stalling', '4', true),
 };
 
 const mats = {
@@ -179,9 +190,33 @@ export function makeFiets(glow: THREE.Material): THREE.Group {
   return group;
 }
 
+/** Scan car: a small white car with a green stripe and a camera mast on the roof. Scaled up so it reads from the city overview. */
+export function makeScanCar(): THREE.Group {
+  const g = new GeoBuilder();
+  const T = (x: number, y: number, z: number) => new THREE.Matrix4().makeTranslation(x, y, z);
+  g.add(new THREE.BoxGeometry(2.1, 0.5, 1.0), '#f4f1e8', T(0, 0.45, 0), { ao: 0.75, aoH: 0.5 });
+  g.add(new THREE.BoxGeometry(1.15, 0.38, 0.88), '#f4f1e8', T(-0.15, 0.89, 0), { ao: 0.9 });
+  g.add(new THREE.BoxGeometry(1.18, 0.22, 0.9), '#222e3a', T(-0.15, 0.9, 0), { ao: 1 });
+  g.add(new THREE.BoxGeometry(2.14, 0.13, 1.02), '#00811f', T(0, 0.46, 0), { ao: 1 });
+  g.add(new THREE.BoxGeometry(0.1, 0.55, 0.1), '#3c4450', T(-0.2, 1.4, 0), { ao: 1 });
+  g.add(new THREE.BoxGeometry(0.62, 0.2, 0.46), '#1f262d', T(-0.1, 1.76, 0), { ao: 1 });
+  g.add(new THREE.CylinderGeometry(0.08, 0.08, 0.1, 8).rotateZ(Math.PI / 2), '#9cc7e8', T(0.23, 1.76, 0), { ao: 1 });
+  for (const sx of [-0.66, 0.66]) for (const sz of [-0.5, 0.5]) g.add(new THREE.CylinderGeometry(0.2, 0.2, 0.2, 10).rotateX(Math.PI / 2), '#1c1f24', T(sx, 0.2, sz), { ao: 1 });
+  const group = new THREE.Group();
+  const m = new THREE.Mesh(g.build()!, structureMaterial());
+  m.castShadow = true; m.receiveShadow = true;
+  group.add(m);
+  const beacon = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.14, 0.2), new THREE.MeshBasicMaterial({ color: '#ffb020', toneMapped: false }));
+  beacon.position.set(-0.45, 1.13, 0); beacon.name = 'beacon';
+  group.add(beacon);
+  group.scale.setScalar(1.5);
+  return group;
+}
+
 export const SMALL_SCALE = 2.4;
 export function makeStructure(id: ToolId, glow: THREE.Material): THREE.Group {
   if (id === 'garage') return makeGarage(glow);
+  if (id === 'scanauto') return makeScanCar();
   const inner = id === 'automaat' ? makeAutomaat(glow) : makeFiets(glow);
   inner.scale.setScalar(SMALL_SCALE);
   const g = new THREE.Group();

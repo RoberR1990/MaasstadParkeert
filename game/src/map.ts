@@ -1,6 +1,6 @@
 // Geography of the toy-map: land polygons, the road graph (shared by rendering, cars and people),
 // block cells and free building lots. x = east, z = south.
-import { BRIDGE_X, TILE_X, TILE_Z0, TILE_Z1, WILLEM_X, Z_N, Z_S } from './config';
+import { BRIDGE_X, TILE_X0, TILE_X1, TILE_Z0, TILE_Z1, WILLEM_X, Z_N, Z_S } from './config';
 
 export type Pt = [number, number];
 
@@ -38,18 +38,18 @@ export function pointInPoly(x: number, z: number, poly: Pt[]) {
 const R = 9; // outer corner radius of the diorama
 const PI = Math.PI;
 export const LAND_N: Pt[] = new PathB()
-  .m(TILE_X, Z_N).m(-TILE_X, Z_N)
-  .arc(-TILE_X + R, TILE_Z0 + R, R, PI, PI * 1.5)
-  .arc(TILE_X - R, TILE_Z0 + R, R, PI * 1.5, PI * 2).pts;
+  .m(TILE_X1, Z_N).m(TILE_X0, Z_N)
+  .arc(TILE_X0 + R, TILE_Z0 + R, R, PI, PI * 1.5)
+  .arc(TILE_X1 - R, TILE_Z0 + R, R, PI * 1.5, PI * 2).pts;
 
 const PIER_X0 = -35, PIER_X1 = -11, PIER_TIP = 31;
 export const LAND_S: Pt[] = new PathB()
-  .m(TILE_X, Z_S).m(PIER_X1, Z_S).m(PIER_X1, PIER_TIP + 4)
+  .m(TILE_X1, Z_S).m(PIER_X1, Z_S).m(PIER_X1, PIER_TIP + 4)
   .arc(PIER_X1 - 4, PIER_TIP + 4, 4, 0, -PI / 2, 5)
   .arc(PIER_X0 + 4, PIER_TIP + 4, 4, -PI / 2, -PI, 5)
-  .m(PIER_X0, Z_S).m(-TILE_X, Z_S)
-  .arc(-TILE_X + R, TILE_Z1 - R, R, PI, PI / 2, 8)
-  .arc(TILE_X - R, TILE_Z1 - R, R, PI / 2, 0, 8).pts;
+  .m(PIER_X0, Z_S).m(TILE_X0, Z_S)
+  .arc(TILE_X0 + R, TILE_Z1 - R, R, PI, PI / 2, 8)
+  .arc(TILE_X1 - R, TILE_Z1 - R, R, PI / 2, 0, 8).pts;
 
 export const LAND_I: Pt[] = chaikin([[13, 31.5], [18, 26], [26, 24.5], [54, 24.5], [62, 26], [67, 31.5], [62, 37], [54, 38.5], [26, 38.5], [18, 37]], 2);
 
@@ -145,7 +145,7 @@ export class Graph {
       return ne;
     });
     for (const n of this.nodes) {
-      if (n.edges.length === 1 && (Math.abs(n.x) >= TILE_X - 3 || n.z <= TILE_Z0 + 3 || n.z >= TILE_Z1 - 3)) n.boundary = true;
+      if (n.edges.length === 1 && (n.x <= TILE_X0 + 3 || n.x >= TILE_X1 - 3 || n.z <= TILE_Z0 + 3 || n.z >= TILE_Z1 - 3)) n.boundary = true;
     }
     // elevation of nodes along edges that were split is already stored on the nodes
   }
@@ -154,15 +154,15 @@ export class Graph {
 
 export function buildGraph(): Graph {
   const g = new Graph();
-  const XN = [-74, -50, -26, 26, 50, 76];
+  const XN = [-74, -50, -26, 26, 50, 76, 106, 130];
   const ZN = [-64, -42, -18, 4];
   // ---- north bank grid
   for (const x of XN) g.line([[x, -84], ...ZN.map((z) => [x, z] as Pt)], 'street');
-  g.line([[-104, -64], ...[-74, -50, -26, 26, 50, 76].map((x) => [x, -64] as Pt), [104, -64]], 'street');
+  g.line([[-104, -64], ...[-74, -50, -26, 26, 50, 76, 106, 130].map((x) => [x, -64] as Pt), [148, -64]], 'street');
   g.line([[-104, -42], [-90, -42], [-74, -42], [-50, -42], [-26, -42], [-12, -42]], 'avenue');
-  g.line([[12, -42], [26, -42], [50, -42], [76, -42], [104, -42]], 'avenue');
-  g.line([[-104, -18], ...[-74, -50, -26].map((x) => [x, -18] as Pt), [0, -18], [26, -18], [50, -18], [76, -18], [104, -18]], 'street');
-  g.line([[-104, 4], [-74, 4], [-50, 4], [-26, 4], [0, 4], [26, 4], [50, 4], [76, 4], [104, 4]], 'quay');
+  g.line([[12, -42], [26, -42], [50, -42], [76, -42], [106, -42], [130, -42], [148, -42]], 'avenue');
+  g.line([[-104, -18], ...[-74, -50, -26].map((x) => [x, -18] as Pt), [0, -18], [26, -18], [50, -18], [76, -18], [106, -18], [130, -18], [148, -18]], 'street');
+  g.line([[-104, 4], [-74, 4], [-50, 4], [-26, 4], [0, 4], [26, 4], [50, 4], [76, 4], [106, 4], [130, 4], [148, 4]], 'quay');
   // Coolsingel boulevard
   g.line([[0, -30], [0, -18], [0, 4]], 'boulevard', { parking: false });
   // station square bus road + connection to Hofplein
@@ -214,11 +214,12 @@ export function buildGraph(): Graph {
   g.line([[17, 31.5], [30, 31.5], [WILLEM_X, 31.5], [63, 31.5]], 'lane');
 
   // ---- south bank
-  const XS = [-76, -50, -23, 0, 30, 52, 102];
-  g.line([[-104, 52], ...XS.map((x) => [x, 52] as Pt), [104, 52]], 'quay');
+  const XS = [-76, -50, -23, 0, 30, 52, 102, 128];
+  g.line([[-104, 52], ...XS.map((x) => [x, 52] as Pt), [148, 52]], 'quay');
   g.line([[-50, 68], [-23, 68], [0, 68]], 'street');
-  g.line([[-104, 82], ...XS.map((x) => [x, 82] as Pt), [104, 82]], 'street');
-  for (const x of XS) g.line([[x, 52], [x, 68], [x, 82]], 'street', x === 0 ? { parking: false } : {});
+  g.line([[-104, 82], ...XS.map((x) => [x, 82] as Pt), [148, 82]], 'street');
+  for (const x of XS) g.line([[x, 52], [x, 68], [x, 82], [x, 106]], 'street', x === 0 ? { parking: false } : {});
+  g.line([[-104, 106], ...XS.map((x) => [x, 106] as Pt), [148, 106]], 'street');
   g.line([[-23, 52], [-23, 44], [-23, 38]], 'street');
   g.line([[0, 82], [0, 84]], 'street');
 
@@ -252,10 +253,24 @@ export const CELLS: Cell[] = [
   c(-106, 52, -76, 82, 'rows'), c(-76, 52, -50, 82, 'rows'),
   c(-50, 68, -23, 82, 'slab'), c(-23, 68, 0, 82, 'rows'),
   c(0, 52, 30, 82, 'modern'), c(30, 52, 52, 82, 'slab'),
+  // Jaar 1 extension to the east: Noord-Oost (north bank) and Feijenoord (south bank, east of De Kuip)
+  c(106, -86, 130, -64, 'rows'), c(130, -86, 150, -64, 'slab'), c(106, -64, 130, -42, 'modern'), c(130, -64, 150, -42, 'rows'),
+  c(106, -42, 130, -18, 'rows'), c(130, -42, 150, -18, 'modern'), c(106, -18, 130, 4, 'slab'), c(130, -18, 150, 4, 'rows'),
+  c(102, 52, 128, 82, 'modern'), c(128, 52, 150, 82, 'rows'),
+  // second row on the south bank
+  c(-106, 82, -76, 112, 'rows'), c(-76, 82, -50, 112, 'slab'), c(-50, 82, -23, 112, 'rows'), c(-23, 82, 0, 112, 'rows'), c(0, 82, 30, 112, 'modern'),
+  c(30, 82, 52, 112, 'rows'), c(52, 82, 102, 112, 'rows'), c(102, 82, 128, 112, 'slab'), c(128, 82, 150, 112, 'modern'),
 ];
 
-/** Free building lots: each is a 2x2 cluster of 6x6 sub-lots (garage takes all four). */
+/** Build spots ("bouwplekken"): each is a 12x12 plot; the wijk follows from wijkAt() in wijken.ts. */
 export const LOT_SIZE = 12;
-export const LOT_CENTRES: Pt[] = [
-  [-62, -30], [-38, -53], [38, -53], [63, -30], [16, -7], [-88, -8], [63, -75], [10.9, 62.9], [-95.2, 62.9], [-65.1, 62.9],
+export const LOT_CENTRES: [number, number][] = [
+  // Centrum
+  [-38, -53], [38, -53], [63, -30], [16, -7], [-38, -30], [63, -53],
+  // Noord & Blijdorp
+  [-62, -30], [-88, -8], [63, -75], [-62, -75], [118, -53], [118, -30],
+  // Kop van Zuid & Noordereiland
+  [10.9, 62.9], [-65.1, 62.9], [-95.2, 62.9], [-63, 97], [-36, 97], [15, 97],
+  // Feijenoord & De Kuip
+  [64, 97], [90, 97], [115, 67], [115, 97],
 ];

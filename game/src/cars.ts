@@ -10,6 +10,7 @@ import { CAR_L, CAR_W, ROAD_Y } from './config';
 import { bubbleTexture } from './tex';
 import { canLeave } from './route';
 import { clamp, lerp, mulberry32, pick, range, easeOutBack } from './util';
+import { WIJKEN, wijkAt } from './wijken';
 
 function carGeometries(kind: 0 | 1) {
   const body = new GeoBuilder();
@@ -65,7 +66,7 @@ interface Agent {
   color: THREE.Color; shape: 0 | 1; scale: number; scaleT: number;
   timer: number; retire: boolean; sprite: number; bubble: '?' | '!' | 'P' | null;
   path: number[]; pi: number; onArrive: 'retire' | 'search';
-  despawn: boolean;
+  despawn: boolean; wi: number;
 }
 export interface Hotspot { x: number; z: number; r: number; k: number }
 export interface Blocker { x: number; z: number; r: number }
@@ -95,6 +96,11 @@ export class CarSystem {
   private sv = new THREE.Vector3(1, 1, 1);
   private yAxis = new THREE.Vector3(0, 1, 0);
   private pressure = 0.6;
+  /** per wijk (order of WIJKEN): demand/supply and search time straight from the simulation */
+  private wState = WIJKEN.map(() => ({ bez: 0.8, search: 2 }));
+  private bayWijk: Int8Array;
+  private edgeWijk: Int8Array;
+  wSearching: number[] = WIJKEN.map(() => 0);
   private reliefs: { x: number; z: number; r: number; k: number }[] = [];
   private searchEdges: REdge[] = [];
   private centralW: number[] = [];
@@ -135,7 +141,7 @@ export class CarSystem {
       this.agents.push({
         active: false, mode: 'wander', e: 0, fwd: true, s: 0, speed: 0, maxSpeed: 4, pos: new THREE.Vector3(), yaw: 0, init: false,
         color: new THREE.Color(), shape: 0, scale: 0, scaleT: 1, timer: 0, retire: false, sprite: -1, bubble: null,
-        path: [], pi: 0, onArrive: 'retire', despawn: false,
+        path: [], pi: 0, onArrive: 'retire', despawn: false, wi: -1,
       });
     }
     this.mats = {
@@ -144,6 +150,9 @@ export class CarSystem {
       P: bubbleTexture('P', '#e9f6ec', '#2f8a63'),
     };
     this.searchEdges = g.edges.filter((e) => SEARCH_KINDS.has(e.kind) && !e.bridge);
+    const wIdx = (x: number, z: number) => { const id = wijkAt(x, z); return id ? WIJKEN.findIndex((w) => w.id === id) : -1; };
+    this.bayWijk = Int8Array.from(bays, (b) => wIdx(b.x, b.z));
+    this.edgeWijk = Int8Array.from(this.searchEdges, (e) => { const A = g.nodes[e.a], B = g.nodes[e.b]; return wIdx((A.x + B.x) / 2, (A.z + B.z) / 2); });
     this.centralW = this.searchEdges.map((e) => {
       const A = g.nodes[e.a], B = g.nodes[e.b];
       const mx = (A.x + B.x) / 2, mz = (A.z + B.z) / 2;
@@ -152,6 +161,11 @@ export class CarSystem {
   }
 
   setPressure(p: number) { this.pressure = clamp(p); }
+  /** Feed the simulation: bezetting (demand / places) and search time in minutes per wijk. */
+  setWijken(m: Record<string, { bez: number; search: number }>) {
+    WIJKEN.forEach((w, i) => { if (m[w.id]) this.wState[i] = m[w.id]; });
+    this.pressure = clamp(this.wState.reduce((a, w) => a + w.bez, 0) / this.wState.length / 1.25);
+  }
   snapNow(seconds = 25) {
     this.snap = true; this.parkedDirty = true;
     this.update(0.016, this.camDist);
@@ -218,7 +232,7 @@ export class CarSystem {
     ag.path = []; ag.pi = 0; ag.onArrive = 'retire';
     this.setBubble(ag, null);
   }
-  private spawnSearcher(near?: Hotspot) {
+  private spawnSearcher(near?: Hotspot, wijk = -1) {
     const ag = this.freeAgent(); if (!ag) return;
     // weighted pick over search edges
     let tot = 0; const w: number[] = [];
@@ -227,6 +241,7 @@ export class CarSystem {
       const A = this.g.nodes[e.a], B = this.g.nodes[e.b];
       const mx = (A.x + B.x) / 2, mz = (A.z + B.z) / 2;
       let ww = this.centralW[i] * Math.pow(1 - this.relief(mx, mz), 3);
+      if (wijk >= 0 && this.edgeWijk[i] !== wijk) ww = 0;
       if (near) ww = Math.hypot(mx - near.x, mz - near.z) < near.r ? 1 : 0;
       else ww *= 1 + this.hot(mx, mz) * 3;
       w.push(ww); tot += ww;
@@ -236,7 +251,7 @@ export class CarSystem {
     for (let i = 0; i < w.length; i++) { r -= w[i]; if (r <= 0) { pickI = i; break; } }
     const e = this.searchEdges[pickI];
     this.init(ag, 'search');
-    ag.e = e.id; ag.fwd = e.oneway ? true : this.rng() < 0.5; ag.s = this.rng() * e.len;
+    ag.e = e.id; ag.fwd = e.oneway ? true : this.rng() < 0.5; ag.s = this.rng() * e.len; ag.wi = this.edgeWijk[pickI];
     this.setBubble(ag, '?');
   }
   private spawnWanderer() {
@@ -305,11 +320,13 @@ export class CarSystem {
     const p = this.pressure;
 
     // ---- parked cars
-    const fill = 0.1 + 0.88 * Math.pow(p, 1.15);
+    const fillW = this.wState.map((w) => 0.1 + 0.88 * Math.pow(clamp(w.bez), 1.2));
+    void p;
     let cnt = 0, changed = false;
     for (let i = 0; i < this.bays.length; i++) {
       const b = this.bays[i];
       const rel = this.reliefs.length ? this.relief(b.x, b.z) : 0;
+      const bw = this.bayWijk[i], fill = bw >= 0 ? fillW[bw] : 0.5;
       const want = this.rank[i] < Math.min(1, fill * (1 - 0.62 * rel) + this.hot(b.x, b.z) * 0.9) ? 1 : 0;
       if (want !== this.bayTarget[i]) { this.bayTarget[i] = want; if (this.snap) this.bayScale[i] = want; }
       cnt += want;
@@ -338,28 +355,30 @@ export class CarSystem {
     if (changed) for (const f of this.parked) f.flush();
     this.parkedDirty = false; this.snap = false;
 
-    // ---- targets
-    let nSearch = 0, nWander = 0, hotSearch = 0;
+    // ---- targets: searchers per wijk follow the simulated search time
+    const nW = WIJKEN.map(() => 0); let nSearch = 0, nWander = 0, hotSearch = 0;
     for (const a of this.agents) if (a.active && !a.retire && !a.despawn) {
-      if (a.mode === 'search') { nSearch++; if (this.hotspot && Math.hypot(a.pos.x - this.hotspot.x, a.pos.z - this.hotspot.z) < this.hotspot.r) hotSearch++; }
+      if (a.mode === 'search') { nSearch++; if (a.wi >= 0) nW[a.wi]++; if (this.hotspot && Math.hypot(a.pos.x - this.hotspot.x, a.pos.z - this.hotspot.z) < this.hotspot.r) hotSearch++; }
       else if (a.mode === 'wander') nWander++;
     }
-    const wantBase = Math.round(Math.pow(p, 1.5) * 30 * (1 - clamp(this.avgRelief * 2.4, 0, 0.85)));
+    const wantW = this.wState.map((w) => Math.round(13 * Math.pow(clamp((w.search - 2.4) / 15), 0.8)));
     const wantHot = this.hotspot ? Math.round(this.hotspot.k * 16) : 0;
-    const wantSearch = wantBase + wantHot;
     const wantWander = Math.round(lerp(10, 46, Math.pow(p, 0.9)));
     this.spawnTimer -= dt;
     if (this.spawnTimer <= 0) {
-      this.spawnTimer = 0.16;
-      if (nSearch < wantSearch) this.spawnSearcher(this.hotspot && hotSearch < wantHot ? this.hotspot : undefined);
-      else if (nSearch > wantSearch + 1) {
-        const v = this.agents.find((a) => a.active && a.mode === 'search' && !a.retire);
-        if (v) { v.timer = 0.2; v.retire = true; }
+      this.spawnTimer = 0.14;
+      let worst = -1, wd = 0, over = -1, od = 0;
+      wantW.forEach((w, i) => { const d = w - nW[i]; if (d > wd) { wd = d; worst = i; } if (-d > od) { od = -d; over = i; } });
+      if (this.hotspot && hotSearch < wantHot) this.spawnSearcher(this.hotspot);
+      else if (worst >= 0) this.spawnSearcher(undefined, worst);
+      if (over >= 0 && od >= 1) {
+        const v = this.agents.find((a) => a.active && a.mode === 'search' && !a.retire && a.wi === over);
+        if (v) { v.timer = 0.2 + this.rng() * 1.2; v.retire = true; }
       }
       if (nWander < wantWander) this.spawnWanderer();
       else if (nWander > wantWander + 1) { const v = this.agents.find((a) => a.active && a.mode === 'wander' && !a.despawn); if (v) v.despawn = true; }
     }
-    this.searching = nSearch;
+    this.searching = nSearch; this.wSearching = nW;
 
     // ---- move
     const spriteSize = clamp(this.camDist * 0.03, 2.6, 9);

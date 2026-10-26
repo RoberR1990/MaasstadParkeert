@@ -25,8 +25,20 @@ export const beheerderJ1 = { name: 'beheerder', act(s: GameState, c: Config): Ac
   for (const r of ['monteur', 'schoonmaker', 'handhaver', 'klantcontact'] as const) if (need[r] * 1.1 - have(r) > 0.3) out.push({ type: 'hire', role: r, n: Math.min(3, Math.ceil(need[r] * 1.1 - have(r))) });
   return out;
 } };
+/** A player who only uses what the Jaar-1 screen offers (garage, sets of 5 automaten, scanauto, stalling, hires, tarief). */
+export const spelerUI = { name: 'speler-ui', act(s: GameState, c: Config): Action[] {
+  const out: Action[] = [], q = s.quarter;
+  const have = (r: any) => s.staff[r as 'monteur'] + s.hiring.filter(h => h.role === r).reduce((a, h) => a + h.n, 0);
+  if (q === 0) out.push({ type: 'build', asset: 'garage', wijk: 'centrum' }, { type: 'build', asset: 'scanauto', count: 1 }, { type: 'build', asset: 'stalling', wijk: 'centrum' }, { type: 'build', asset: 'stalling', wijk: 'kopbrug' });
+  if (q === 1) out.push({ type: 'build', asset: 'stalling', wijk: 'kuipwijk' }, { type: 'build', asset: 'stalling', wijk: 'noord' });
+  if (q === 1) out.push({ type: 'introducePaid', wijk: 'kuipwijk', level: 'midden' });
+  if (q === c.scenario.goal.marathon.quarter) out.push({ type: 'setTariff', wijk: 'centrum', level: 'hoog' });
+  const need = staffNeeds(s, c, true);
+  for (const r of ['monteur', 'schoonmaker', 'handhaver', 'klantcontact'] as const) if (need[r] - have(r) > 0.3) out.push({ type: 'hire', role: r, n: Math.min(3, Math.ceil(need[r] - have(r))) });
+  return out;
+} };
 /** Probes for dominant tricks (only with --all). */
 export const alleenTarief = { name: 'alleen-tarief', act: (s: GameState, c: Config): Action[] => s.quarter === c.scenario.goal.marathon.quarter ? [{ type: 'setTariff', wijk: 'centrum', level: 'hoog' }] : [] };
 export const alleenGarage = { name: 'alleen-garage', act: (s: GameState, c: Config): Action[] => s.quarter === 0 ? [{ type: 'build', asset: 'garage', wijk: 'centrum' }, { type: 'hire', role: 'schoonmaker', n: 1 }, { type: 'hire', role: 'monteur', n: 1 }] : [] };
 export const hoogOveral = { name: 'hoog-overal', act: (s: GameState, c: Config): Action[] => s.quarter === 0 ? Object.values(s.wijken).filter(w => w.paid).map(w => ({ type: 'setTariff' as const, wijk: w.id, level: 'hoog' as const })) : [] };
-export const J1_BOTS = [...BOTS.filter(b => ['nietsdoen', 'bouwwoede'].includes(b.name)), beheerderJ1, ...(process.argv.includes('--all') ? [alleenTarief, alleenGarage, hoogOveral] : [])];
+export const J1_BOTS = [...BOTS.filter(b => ['nietsdoen', 'bouwwoede'].includes(b.name)), beheerderJ1, spelerUI, ...(process.argv.includes('--all') ? [alleenTarief, alleenGarage, hoogOveral] : [])];

@@ -33,6 +33,15 @@ const ICONS: Record<string, string> = {
   sliders: `<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.1" ${T}/><circle cx="9" cy="17" r="2.1" ${T}/>`,
   chat: `<path d="M4.2 6.6a2.4 2.4 0 0 1 2.4-2.4h10.8a2.4 2.4 0 0 1 2.4 2.4v7.2a2.4 2.4 0 0 1-2.4 2.4H11l-4.2 3.6v-3.6a2.4 2.4 0 0 1-2.6-2.4z" ${T}/>`,
   rotate: `<path d="M19.6 12a7.6 7.6 0 1 1-2.5-5.6"/><path d="M19.8 4.6v4.4h-4.4"/>`,
+  stalling: `<circle cx="6" cy="16.2" r="3.7" ${T}/><circle cx="18" cy="16.2" r="3.7" ${T}/><path d="M6 16.2l3.6-7h5.1l3.3 7M10.5 16.2l4.2-7M8.6 8.5h2.6M14.7 9.2l-.9-1.9h2"/>`,
+  scanauto: `<path d="M3.6 16v-3l1.9-3.6a1.6 1.6 0 0 1 1.5-1h8.4a1.6 1.6 0 0 1 1.5 1l1.9 3.6v3a1 1 0 0 1-1 1H4.6a1 1 0 0 1-1-1z" ${T}/><circle cx="7.6" cy="16.4" r="1.4" fill="currentColor"/><circle cx="16.4" cy="16.4" r="1.4" fill="currentColor"/><path d="M12 8.4V4.6M9.6 3.6a3.4 3.4 0 0 1 4.8 0"/>`,
+  beleid: `<path d="M6 3.8h9.4l3.4 3.4v13H6z" ${T}/><path d="M9 11h6.8M9 14.2h6.8M9 17.2h4"/>`,
+  team: `<circle cx="9" cy="8.4" r="3" ${T}/><path d="M3.4 19.6a5.6 5.6 0 0 1 11.2 0"/><circle cx="17" cy="9.4" r="2.4" ${T}/><path d="M16.4 14.2a4.6 4.6 0 0 1 4.8 4.4"/>`,
+  check: `<path d="M5.4 12.6l4.2 4.2 9-9.6"/>`,
+  warn: `<path d="M12 4.2l8.4 14.6H3.6z" ${T}/><path d="M12 10v4M12 16.6v.4"/>`,
+  trash: `<path d="M5.5 7.4h13M9.6 7.4V5h4.8v2.4M7.2 7.4l.8 12h8l.8-12"/>`,
+  star: `<path d="M12 3.6l2.5 5.4 5.9.7-4.4 4 1.2 5.8L12 16.5l-5.2 3 1.2-5.8-4.4-4 5.9-.7z" ${T}/>`,
+  help: `<circle cx="12" cy="12" r="8.4" ${T}/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .8-1 1.5M12 16.6v.4"/>`,
 };
 
 export const icon = (name: string, cls = '') => wrap(ICONS[name] ?? '', cls);

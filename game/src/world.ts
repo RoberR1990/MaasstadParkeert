@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { FlatBuilder, GeoBuilder } from './geo';
 import { Town } from './buildings';
+import { wijkAt, type WijkId } from './wijken';
 import { Graph, buildGraph, CELLS, LOT_CENTRES, LOT_SIZE } from './map';
 import { Bay, buildLand, buildRoads, shoreTexture, waterSkirts, WATER_X0, WATER_X1, WATER_Z0, WATER_Z1, LampSpec } from './terrain';
 import { buildLandmarks, Label, Updater } from './landmarks';
@@ -10,7 +11,7 @@ import * as PAL from './palette';
 import { noiseTexture, wakeTexture } from './tex';
 import { Environment } from './env';
 import { patchFacade, patchIntro } from './patches';
-import { WATER_Y, WORLD_CENTRE } from './config';
+import { INTRO_RADIUS, WATER_Y, WORLD_CENTRE } from './config';
 import { mulberry32, pick, range } from './util';
 
 export type { Bay } from './terrain';
@@ -20,6 +21,7 @@ export interface Lot {
   /** four 6x6 sub-lots (nw, ne, sw, se); true = free */
   subs: boolean[];
   free: boolean; // whole lot untouched
+  wijk: WijkId;
   ring?: THREE.Mesh;
 }
 export interface Boat { g: THREE.Group; curve: THREE.CatmullRomCurve3; u: number; speed: number; bob: number; phase: number; len: number }
@@ -59,7 +61,7 @@ export class World {
       return m;
     };
     const main = mk('#ffffff', 0.85, 0.5, { vertexColors: true }, 0.88);
-    patchIntro(main, U, 'world', false, WORLD_CENTRE, 130);
+    patchIntro(main, U, 'world', false, WORLD_CENTRE, INTRO_RADIUS);
     patchFacade(main, U);
     this.mainMat = main;
     const metal = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.34, metalness: 0.55, envMapIntensity: 1.5 });
@@ -70,8 +72,8 @@ export class World {
     const glassMat = new THREE.MeshStandardMaterial({ color: '#bfe3ee', roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.22, depthWrite: false, envMapIntensity: 1.6, side: THREE.DoubleSide });
     const crown = mk('#ffffff', 0.92, 0.6, { vertexColors: true, flatShading: true }, 0.9);
     const trunk = mk(COL.trunk, 1, 0.9);
-    patchIntro(crown, U, 'inst', true, WORLD_CENTRE, 130);
-    patchIntro(trunk, U, 'inst', true, WORLD_CENTRE, 130);
+    patchIntro(crown, U, 'inst', true, WORLD_CENTRE, INTRO_RADIUS);
+    patchIntro(trunk, U, 'inst', true, WORLD_CENTRE, INTRO_RADIUS);
     this.mats = { main, metal, flatMat, roadMat, markMat, deckMat, glassMat, crown, trunk };
 
     this.lampHeadMat = new THREE.MeshBasicMaterial({ color: '#cfc7b8' });
@@ -117,13 +119,13 @@ export class World {
     const bm = addMesh(town.gb.build(), main, { cast: true });
     if (bm) {
       const dm = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking });
-      patchIntro(dm, U, 'world', false, WORLD_CENTRE, 130);
+      patchIntro(dm, U, 'world', false, WORLD_CENTRE, INTRO_RADIUS);
       bm.customDepthMaterial = dm;
     }
     const lmMain = addMesh(lm.gb.build(), main, { cast: true });
     if (lmMain) {
       const dm = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking });
-      patchIntro(dm, U, 'world', false, WORLD_CENTRE, 130);
+      patchIntro(dm, U, 'world', false, WORLD_CENTRE, INTRO_RADIUS);
       lmMain.customDepthMaterial = dm;
     }
     addMesh(lm.mt.build(), metal, { cast: true });
@@ -146,7 +148,7 @@ export class World {
     const n = LOT_CENTRES.length;
     LOT_CENTRES.forEach(([cx, cz], i) => {
       const h = LOT_SIZE / 2;
-      this.lots.push({ id: i, cx, cz, size: LOT_SIZE, subs: [true, true, true, true], free: true });
+      this.lots.push({ id: i, cx, cz, size: LOT_SIZE, subs: [true, true, true, true], free: true, wijk: wijkAt(cx, cz) ?? 'noord' });
       fb.rect(cx - h, cz - h, cx + h, cz + h, 0.045, '#e8dec8');
       // divider cross + parking-bay hints
       fb.rect(cx - 0.05, cz - h + 0.4, cx + 0.05, cz + h - 0.4, 0.052, '#cfc4ad');
@@ -161,12 +163,12 @@ export class World {
     this.group.add(m);
     // pulsing outline per lot
     const ringShape = new THREE.Shape();
-    const o = LOT_SIZE / 2 + 0.2, inn = o - 0.55;
+    const o = LOT_SIZE / 2 + 0.25, inn = o - 0.85;
     ringShape.moveTo(-o, -o); ringShape.lineTo(o, -o); ringShape.lineTo(o, o); ringShape.lineTo(-o, o); ringShape.closePath();
     const hole = new THREE.Path(); hole.moveTo(-inn, -inn); hole.lineTo(-inn, inn); hole.lineTo(inn, inn); hole.lineTo(inn, -inn); hole.closePath();
     ringShape.holes.push(hole);
     const rg = new THREE.ShapeGeometry(ringShape).rotateX(-Math.PI / 2);
-    const rmat = new THREE.MeshBasicMaterial({ color: '#ffd264', transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, toneMapped: false });
+    const rmat = new THREE.MeshBasicMaterial({ color: '#f2a600', transparent: true, opacity: 0.5, depthWrite: false, fog: false, toneMapped: false });
     this.lotMarks = new THREE.InstancedMesh(rg, rmat, n);
     this.lotMarks.frustumCulled = false;
     this.lotMarks.renderOrder = 6;
@@ -207,7 +209,7 @@ export class World {
       crowns.castShadow = true; crowns.receiveShadow = true; trunks.castShadow = true;
       for (const mesh of [crowns, trunks]) {
         const d = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking });
-        patchIntro(d, this.env.uniforms, 'inst', false, WORLD_CENTRE, 130);
+        patchIntro(d, this.env.uniforms, 'inst', false, WORLD_CENTRE, INTRO_RADIUS);
         mesh.customDepthMaterial = d;
         mesh.frustumCulled = false;
         this.group.add(mesh);
@@ -371,8 +373,8 @@ export class World {
       grp.add(wake);
       return { grp, len };
     };
-    const east = [[-112, 37], [-60, 37], [-8, 37], [8, 39], [18, 42.4], [60, 42.4], [74, 40], [88, 36], [112, 36]];
-    const west = [[112, 22], [86, 21], [72, 19], [62, 17], [20, 17], [10, 19], [0, 22], [-60, 22], [-112, 22]];
+    const east = [[-112, 37], [-60, 37], [-8, 37], [8, 39], [18, 42.4], [60, 42.4], [74, 40], [88, 36], [152, 36]];
+    const west = [[158, 22], [86, 21], [72, 19], [62, 17], [20, 17], [10, 19], [0, 22], [-60, 22], [-112, 22]];
     const defs: { kind: Kind; path: number[][]; speed: number; start: number }[] = [
       { kind: 'tour', path: west, speed: 2.0, start: 0.42 },
       { kind: 'taxi', path: east, speed: 5.0, start: 0.34 },

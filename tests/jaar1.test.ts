@@ -4,7 +4,7 @@ import { loadConfig } from '../src/sim/load';
 import { createState, tick } from '../src/sim/model';
 import { goalStatus, explain } from '../src/sim/round';
 import { BOTS } from './../tools/bots';
-import { beheerderJ1 } from '../tools/jaar1-bots';
+import { beheerderJ1, spelerUI } from '../tools/jaar1-bots';
 
 const cfg = loadConfig('scenario-jaar1.json');
 const play = (act: (s: any, c: any) => any[], seed = 1) => { let s = createState(cfg, seed); for (let q = 0; q < 4; q++) s = tick(s, act(s, cfg), cfg); return s; };
@@ -14,6 +14,10 @@ test('jaar1: niets doen haalt het doel niet, bouwwoede ook niet, een verstandige
   assert.ok(!(nd.blijOk && nd.fondsOk && nd.marathonOk));
   assert.ok(!(bw.blijOk && bw.fondsOk && bw.marathonOk));
   assert.ok(bh.blij >= 70 && bh.fondsOk && bh.marathonOk);
+});
+
+test('jaar1: wie alleen de knoppen van het scherm gebruikt (speler-ui) kan het doel halen', () => {
+  for (const seed of [1, 2, 3]) { const st = goalStatus(play(spelerUI.act, seed), cfg); assert.ok(st.blij >= 70 && st.fondsOk && st.marathonOk, `seed ${seed}: blij ${st.blij}`); }
 });
 
 test('jaar1: start = Centrum rood, Rotterdammert rond 52', () => {
