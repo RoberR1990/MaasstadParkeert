@@ -52,15 +52,20 @@
   <!-- event banner (Bokito / wedstrijd) -->
   <div id="banner" class="banner hidden"><div class="b-main"><b id="banner-title"></b><span id="banner-sub"></span></div><div class="b-count" id="banner-count"></div><button class="b-x" id="banner-x" aria-label="Stop evenement"></button></div>
 
-  <!-- left rail: beleid / team -->
+  <!-- left rail: beleid / druk-kaart / moment -->
   <div id="rail" class="rail">
     <button class="panel rail-btn" id="btn-beleid" data-panel="beleid" data-tip="Beleid|Bepaal per wijk of parkeren betaald is en hoe duur."><span id="ico-beleid"></span><span class="rb-t">Beleid</span></button>
-    <button class="panel rail-btn" id="btn-team" data-panel="team" data-tip="Team|Neem mensen aan. Garages, automaten en scanauto's hebben mensen nodig."><span id="ico-team"></span><span class="rb-t">Team</span></button>
+    <button class="panel rail-btn on" id="btn-heat" data-tip="Druk-kaart|Kleurt elke wijk: groen is makkelijk parkeren, rood is lang zoeken. Tik op een wijk voor details."><span id="ico-heat"></span><span class="rb-t">Druk-kaart</span></button>
+    <button class="panel rail-btn hidden" id="btn-moment" data-panel="moment" data-tip="Marathon|Kies wat Parkeren doet tijdens de Marathon."><span id="ico-moment"></span><span class="rb-t">Marathon</span></button>
   </div>
   <div id="sidepanel" class="panel sidepanel hidden"></div>
 
   <!-- bottom-left: the plan of this quarter -->
   <div id="plan" class="panel plan"></div>
+  <!-- bottom: the five teams, with workload meters -->
+  <div id="teambar" class="teambar" role="group" aria-label="Teams en werkdruk"></div>
+  <!-- forecast card (next to the cursor, bottom sheet on a phone) -->
+  <div id="fcard" class="panel fcard hidden"></div>
 
   <!-- bottom-center: build bar -->
   <div id="hint" class="hint hidden"><span id="hint-text"></span><button id="btn-cancel" class="btn cancel">Annuleer</button></div>

@@ -4,7 +4,7 @@ Needs `npm run preview` (port 4173). Writes numbered PNGs + a short log."""
 import sys, time, os, json
 from playwright.sync_api import sync_playwright
 
-OUT = sys.argv[1] if len(sys.argv) > 1 else 'screenshots/kern-a'
+OUT = sys.argv[1] if len(sys.argv) > 1 else 'screenshots/kern-b'
 BASE = sys.argv[2] if len(sys.argv) > 2 else 'http://127.0.0.1:4173/'
 os.makedirs(OUT, exist_ok=True)
 ARGS = ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']
@@ -33,77 +33,113 @@ def run(w, h, tag, full):
             pg.mouse.click(pos['x'], pos['y']); time.sleep(1.5)
         def scan(wijk):
             click('.tool[data-tool="scanauto"]'); time.sleep(1)
-            c = xy(f'window.__game.wijkXY("{wijk}")')
-            pg.mouse.click(c['x'] + 70, c['y'] + 50); time.sleep(1.5)
-        def hire(*roles):
-            click('#btn-team'); time.sleep(1)
-            for r in roles: click(f'[data-hire="{r}"]'); time.sleep(0.5)
-            return
+            pg.evaluate(f"document.querySelector('.wchip[data-w=\"{wijk}\"]').click()"); time.sleep(1.5)
+        def hire(*teams):
+            for t in teams: click(f'[data-hire="{t}"].tc-hire'); time.sleep(0.5)
+        def fix_teams(limit=5):
+            # what a player does: look at the teambalk and hire where a card is not green
+            for _ in range(limit):
+                bad = pg.evaluate("[...document.querySelectorAll('#teambar .tc')].filter(c => !c.classList.contains('groen')).map(c => c.dataset.team)")
+                if not bad: return
+                for t in bad: click(f'[data-hire="{t}"].tc-hire'); time.sleep(0.4)
         def close_panel(sel): click(sel); time.sleep(0.6)
         def next_quarter(extra=None):
             click('#btn-next'); wait('#playbar:not(.hidden)')
             if extra: extra()
             click('#btn-skip'); wait('.card.afr'); shot('afrekening-q%d' % (xy('window.__game.session.results.length')), 4)
             click('#btn-continue')
-        pg.goto(BASE + '?q=low&intro=0')
-        pg.wait_for_function('window.__game && window.__game.ready', timeout=300000)
-        time.sleep(2)
-        shot('title')
-        click('#btn-play')
-        wait('#tutorial:not(.hidden)')
-        time.sleep(4)
-        shot('tut1-probleem')
-        click('#tut-next'); shot('tut2-doel', 2.5)
-        click('#tut-next'); shot('tut3-bouwen', 2.5)
-        click('.tool[data-tool="garage"]'); time.sleep(2)
-        shot('tut3b-bouwplek', 2)
-        pos = xy('window.__game.lotXY("centrum", 0)')
-        pg.mouse.move(pos['x'] - 5, pos['y'] - 5); time.sleep(0.5)
-        pg.mouse.move(pos['x'], pos['y']); time.sleep(1)
-        shot('hover')
-        pg.mouse.click(pos['x'], pos['y']); time.sleep(2)
-        wait('#tutorial:not(.hidden)')
-        shot('tut4-volgend', 2.5)
-        # Q1: hires, scanauto, stalling in Centrum + Kop van Zuid
-        hire('schoonmaker', 'monteur', 'handhaver'); shot('team-paneel', 1.5); close_panel('#btn-team')
+        NOTUT = os.environ.get('NOTUT') == '1'
+        if NOTUT:
+            pg.goto(BASE + '?q=low&intro=0&play=1')
+            pg.wait_for_function('window.__game && window.__game.ready', timeout=300000)
+            time.sleep(2)
+            place('garage', 'centrum')
+        else:
+            pg.goto(BASE + '?q=low&intro=0')
+            pg.wait_for_function('window.__game && window.__game.ready', timeout=300000)
+            time.sleep(2)
+            shot('title')
+            click('#btn-play')
+            wait('#tutorial:not(.hidden)')
+            time.sleep(4)
+            shot('tut1-probleem')
+            click('#tut-next'); shot('tut2-doel', 2.5)
+            click('#tut-next'); shot('tut3-bouwen', 2.5)
+            click('.tool[data-tool="garage"]'); time.sleep(2)
+            shot('tut3b-bouwplek', 2)
+            pos = xy('window.__game.lotXY("centrum", 0)')
+            pg.mouse.move(pos['x'] - 5, pos['y'] - 5); time.sleep(0.5)
+            pg.mouse.move(pos['x'], pos['y']); time.sleep(1)
+            shot('hover')
+            pg.mouse.click(pos['x'], pos['y']); time.sleep(2)
+            wait('#tutorial:not(.hidden)')
+            shot('tut4-volgend', 2.5)
+            click('#tut-skip'); time.sleep(1)
+        # Q1: scanauto + 3 stallings + first hires; look at the druk-kaart, teambalk and wijkpaneel
+        shot('plan-q1-heatmap', 2)
+        hire('schoonmaak', 'schoonmaak', 'schoonmaak', 'backoffice', 'handhaving')
+        fix_teams()
         scan('centrum')
+        click('#btn-heat'); time.sleep(1); shot('druk-kaart-uit', 1); click('#btn-heat'); time.sleep(1)
+        # wijkpaneel: click the Noord label (ground click opens the panel)
+        pg.evaluate("document.querySelector('.wchip[data-w=kuipwijk]').click()"); time.sleep(1.5)
+        pg.mouse.move(760, 200); shot('wijkpaneel', 1.5); close_panel('#sidepanel [data-close]')
         place('stalling', 'centrum', True, 1)
         place('stalling', 'kopbrug', True)
-        shot('plan-q1', 2)
-        next_quarter(lambda: (time.sleep(5), shot('spelen', 1)))
-        time.sleep(6)
-        shot('plan-q2-sap', 2)
-        # Q2: stalling Kuip + Noord, Kuip midden, one invalid tap
         place('stalling', 'kuipwijk', True)
+        # voorspelling: hover a garage spot in noord with the garage tool
+        click('.tool[data-tool="automaat"]'); time.sleep(1)
+        pos = xy('window.__game.lotXY("centrum", 2, true)') or xy('window.__game.lotXY("centrum", 0, true)')
+        pg.mouse.move(pos['x'] - 4, pos['y'] - 4); time.sleep(0.4); pg.mouse.move(pos['x'], pos['y']); time.sleep(1.2)
+        shot('voorspelling-hover', 1)
+        click('#btn-cancel'); time.sleep(0.5)
+        # voorspelling bij beleid
+        click('#btn-beleid'); time.sleep(1)
+        pg.locator('[data-pol="kuipwijk:midden"]').first.hover(); time.sleep(1.2)
+        shot('voorspelling-beleid', 1)
+        close_panel('#sidepanel [data-close]')
+        shot('plan-q1', 1.5)
+        next_quarter(lambda: (time.sleep(5), shot('spelen', 1)))
+        time.sleep(3)
+        # Q2: dilemma
+        wait('.card.dilemma'); print('modal', xy("document.getElementById('modal').className")); shot('dilemma', 3)
+        click('.dl-opt[data-choice="nee"]'); time.sleep(1.5)
+        shot('plan-q2-sap', 3)
         place('stalling', 'noord', True)
+        hire('klantcontact', 'backoffice')
+        fix_teams()
+        next_quarter()
+        time.sleep(3)
+        # Q3: announcement
+        wait('.card.dilemma'); shot('marathon-aankondiging', 1.5)
+        click('#btn-ok'); time.sleep(1.5)
         click('#btn-beleid'); time.sleep(1)
         click('[data-pol="kuipwijk:midden"]'); time.sleep(0.8)
-        shot('beleid-q2', 1.2)
-        close_panel('#btn-beleid')
-        click('.tool[data-tool="garage"]'); time.sleep(0.4)
-        pg.mouse.click(w * 0.5, h * 0.42); time.sleep(1.2)
-        shot('ongeldige-tik', 1)
-        click('#btn-cancel'); time.sleep(0.5)
-        shot('plan-q2-gevuld', 1.5)
-        next_quarter()
-        time.sleep(5)
-        # Q3: nothing new, just look at the plan
+        close_panel('#sidepanel [data-close]')
+        hire('klantcontact', 'backoffice', 'handhaving')
+        fix_teams()
         shot('plan-q3', 1.5)
         next_quarter()
-        time.sleep(5)
-        # Q4: marathon, Centrum hoog tarief
+        time.sleep(3)
+        # Q4: Moment panel (opens by itself), partners first, then two measures
+        wait('.mo-partner'); time.sleep(1)
+        click('.pick[data-pick="evenementtarief"]'); time.sleep(0.6)
+        click('.pick[data-pick="brief"]'); time.sleep(0.6)
+        shot('moment-paneel', 1.2)
+        close_panel('#sidepanel [data-close]')
         click('#btn-beleid'); time.sleep(1)
         click('[data-pol="centrum:hoog"]'); time.sleep(0.8)
-        close_panel('#btn-beleid')
+        close_panel('#sidepanel [data-close]')
+        fix_teams()
         shot('plan-q4-marathon', 1.5)
-        next_quarter(lambda: (time.sleep(6), shot('spelen-marathon', 1)))
+        next_quarter(lambda: (xy('window.__game.advance(7)'), shot('spelen-marathon', 1)))
         wait('.card.eind', t=300000); time.sleep(4)
         shot('eindscherm', 2)
         print(tag, 'phase', xy('window.__game.phase'), 'errors:', errs[:5])
         b.close()
 
 def run_phone():
-    """Phone (390x844, touch): title -> tutorial -> garage -> afrekening -> plan with Team panel."""
+    """Phone (390x844, touch): plan, voorspelling, afrekening."""
     with sync_playwright() as p:
         b = p.chromium.launch(args=ARGS)
         ctx = b.new_context(viewport={'width': 390, 'height': 844}, has_touch=True, is_mobile=True, device_scale_factor=1, reduced_motion='reduce')
@@ -126,11 +162,12 @@ def run_phone():
         tap('.tool[data-tool="garage"]'); time.sleep(1); shot('tut3-bouwplek')
         pos = pg.evaluate('window.__game.lotXY("centrum", 0)')
         pg.touchscreen.tap(pos['x'], pos['y']); time.sleep(1.5); shot('plan-q1')
-        tap('#btn-next'); wait('#playbar:not(.hidden)'); time.sleep(2); shot('spelen')
-        tap('#btn-skip'); wait('.card.afr'); time.sleep(1); shot('afrekening-q1')
-        pg.evaluate("document.querySelector('.card.afr').scrollTo(0, 99999)"); time.sleep(0.5); shot('afrekening-q1-onder')
-        tap('#btn-continue'); time.sleep(2); shot('plan-q2')
-        tap('#btn-team'); time.sleep(1); shot('team')
+        time.sleep(1); shot('plan-q1')
+        pg.evaluate("document.querySelector('#btn-beleid').click()"); time.sleep(1)
+        pg.evaluate("document.querySelector('[data-pol=\"kuipwijk:midden\"]').click()"); time.sleep(1.2); shot('voorspelling')
+        pg.evaluate("document.querySelector('#sidepanel [data-close]').click()"); time.sleep(0.6)
+        tap('#btn-next'); wait('#playbar:not(.hidden)'); time.sleep(2)
+        tap('#btn-skip'); wait('.card.afr'); time.sleep(2); shot('afrekening-q1')
         print('phone errors:', errs[:5])
         b.close()
 

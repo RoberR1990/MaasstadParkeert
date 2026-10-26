@@ -37,6 +37,8 @@ const ICONS: Record<string, string> = {
   scanauto: `<path d="M3.6 16v-3l1.9-3.6a1.6 1.6 0 0 1 1.5-1h8.4a1.6 1.6 0 0 1 1.5 1l1.9 3.6v3a1 1 0 0 1-1 1H4.6a1 1 0 0 1-1-1z" ${T}/><circle cx="7.6" cy="16.4" r="1.4" fill="currentColor"/><circle cx="16.4" cy="16.4" r="1.4" fill="currentColor"/><path d="M12 8.4V4.6M9.6 3.6a3.4 3.4 0 0 1 4.8 0"/>`,
   beleid: `<path d="M6 3.8h9.4l3.4 3.4v13H6z" ${T}/><path d="M9 11h6.8M9 14.2h6.8M9 17.2h4"/>`,
   team: `<circle cx="9" cy="8.4" r="3" ${T}/><path d="M3.4 19.6a5.6 5.6 0 0 1 11.2 0"/><circle cx="17" cy="9.4" r="2.4" ${T}/><path d="M16.4 14.2a4.6 4.6 0 0 1 4.8 4.4"/>`,
+  heat: `<rect x="3.6" y="3.6" width="7.4" height="7.4" rx="2" fill="#e2735a" fill-opacity=".55"/><rect x="13" y="3.6" width="7.4" height="7.4" rx="2" fill="#f0b640" fill-opacity=".55"/><rect x="3.6" y="13" width="7.4" height="7.4" rx="2" fill="#5fb596" fill-opacity=".55"/><rect x="13" y="13" width="7.4" height="7.4" rx="2" fill="#e2735a" fill-opacity=".25"/>`,
+  arrow: `<path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/>`,
   check: `<path d="M5.4 12.6l4.2 4.2 9-9.6"/>`,
   warn: `<path d="M12 4.2l8.4 14.6H3.6z" ${T}/><path d="M12 10v4M12 16.6v.4"/>`,
   trash: `<path d="M5.5 7.4h13M9.6 7.4V5h4.8v2.4M7.2 7.4l.8 12h8l.8-12"/>`,

@@ -15,11 +15,14 @@ import { SAP_SVG } from './avatar';
 import { audio } from './audio';
 import { TOOLS, ToolId, makeStructure } from './structures';
 import { Patrol } from './patrol';
-import { Session, GOAL, QUARTERS, type PlanItem, type QuarterResult } from './session';
+import { Session, GOAL, QUARTERS, UI_CFG, type PlanItem, type QuarterResult } from './session';
 import { UI } from './ui';
-import { fmtM, fmtMin, sapAdvice } from './copy';
+import { Heat } from './heat';
+import { fmtM, fmtMin, sapAdvice, wijkName } from './copy';
+import type { TeamId } from '@sim/types';
 import { WIJKEN, WIJK_BY_ID, wijkAt, type WijkId } from './wijken';
 import { LOT_SIZE } from './map';
+import { shortestPath } from './route';
 import { clamp, damp, easeInOutCubic, easeOutBack, lerp } from './util';
 
 const q = new URLSearchParams(location.search);
@@ -62,6 +65,9 @@ scene.add(crowd.group);
 const fx = new Fx();
 scene.add(fx.group);
 const post = new Post(renderer, scene, camera);
+const heat = new Heat();
+heat.cfg = { green: UI_CFG.heat.green, red: UI_CFG.heat.red };
+scene.add(heat.mesh);
 
 // ------------------------------------------------------------------ game state
 const session = new Session();
@@ -72,7 +78,6 @@ const game = {
   shake: 0,
   playT: 0, playRes: null as QuarterResult | null, chipsNew: false,
   hourTarget: 11,
-  sapShown: false,
 };
 env.hour = +(q.get('hour') ?? 11);
 env.rainTarget = q.get('rain') === '1' ? 1 : 0;
@@ -218,6 +223,7 @@ function selectTool(id: ToolId | null) {
   hud.selectTool(id);
   if (id) ui.togglePanel(null);
   rebuildGhost();
+  if (!id) fcHide();
   for (const c of wijkChips.values()) c.classList.toggle('target', id === 'scanauto');
   refreshHint();
 }
@@ -322,15 +328,45 @@ ui.onPolicy = (w, level) => {
   }
   sfx('click'); ui.say(''); afterPlanChange();
 };
-ui.onHire = (role) => {
-  const r = session.add(session.hireItem(role));
+ui.onHire = (team: TeamId) => {
+  const r = session.add(session.hireItem(team));
   if (!r.ok) { sfx('error'); ui.say(r.reason); return; }
   sfx('coin'); ui.say(''); afterPlanChange();
 };
+ui.onHeat = (on) => { heat.setVisible(on && game.phase === 'plan' && !game.tool); };
+ui.onWijk = (w) => heat.setSelected(w);
+ui.onPick = (id, on) => {
+  const err = session.setMomentPick(id, on);
+  if (err) { sfx('error'); ui.say(err); return; }
+  sfx(on ? 'coin' : 'click'); ui.say(''); afterPlanChange();
+};
 ui.onFly = (w) => {
+  if (game.phase === 'plan' && !game.tool) { sfx('click'); ui.openWijk(w); return; }
   if (game.tool === 'scanauto') { planBuild('scanauto', w); return; }
   sfx('click'); flyToWijk(w);
 };
+
+// ------------------------------------------------------------------ voorspelling (one quarter ahead on a cloned state)
+let fcKey = '';
+function fcHide() { fcKey = ''; ui.hideForecast(); }
+function fcFor(tool: ToolId, wijk: WijkId, at: { x: number; y: number } | null) {
+  const kind = tool as 'garage' | 'automaat' | 'scanauto' | 'stalling';
+  const item = session.buildItem(kind, wijk, undefined);
+  const key = `${tool}:${wijk}:${session.plan.length}`;
+  if (key === fcKey && !at) return;
+  fcKey = key;
+  const f = session.forecast([item.action], wijk);
+  ui.showForecast(f, `${TOOLS[tool].label} in ${wijkName(wijk)}`, at, item.cost);
+}
+function fcHover(x: number, y: number) {
+  const tool = game.tool; if (!tool) return;
+  const p = pickAt(x, y); if (!p) { fcHide(); return; }
+  let w: WijkId | null = null;
+  if (tool === 'scanauto') w = wijkAt(p.x, p.z);
+  else { const l = lotAt(p.x, p.z); w = l && lotValid(l, tool) ? l.wijk : null; }
+  if (!w) { fcHide(); return; }
+  fcFor(tool, w, { x, y });
+}
 
 // ------------------------------------------------------------------ pointer input
 let downPos = { x: 0, y: 0 };
@@ -338,8 +374,9 @@ canvas.addEventListener('pointermove', (e) => {
   mouse.set((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1);
   lastPointer.x = e.clientX; lastPointer.y = e.clientY;
   if (e.pointerType === 'mouse') hoverLabelAt(e.clientX, e.clientY);
+  if (game.tool && game.phase === 'plan') fcHover(e.clientX, e.clientY);
 });
-canvas.addEventListener('pointerleave', () => { mouse.set(-9, -9); hideLabelTip(); });
+canvas.addEventListener('pointerleave', () => { mouse.set(-9, -9); hideLabelTip(); fcHide(); });
 canvas.addEventListener('pointerdown', (e) => { downPos = { x: e.clientX, y: e.clientY }; if (e.button === 2) selectTool(null); });
 canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 canvas.addEventListener('click', (e) => {
@@ -358,6 +395,12 @@ canvas.addEventListener('click', (e) => {
     if (!lotValid(l, game.tool)) { warn(game.tool === 'garage' ? 'Een garage heeft een hele lege bouwplek nodig.' : 'Deze bouwplek zit vol.'); return; }
     planBuild(game.tool, l.wijk, l, { x: e.clientX, y: e.clientY });
     return;
+  }
+  if (game.phase === 'plan' && (!tutorial.active || tutorial.step >= 3)) {
+    const lbl = labelAt(e.clientX, e.clientY);
+    const p = pickAt(e.clientX, e.clientY);
+    const w = lbl ? wijkAt(lbl.x, lbl.z) : p ? wijkAt(p.x, p.z) : null;
+    if (w) { sfx('click'); ui.openWijk(w); return; }
   }
   hoverLabelAt(e.clientX, e.clientY, true);
 });
@@ -424,7 +467,7 @@ function toggleLabels(on = !labelsAll) {
 hud.onLabels = () => toggleLabels();
 
 // HUD rectangles, so floating labels never sit on top of a panel
-const HUD_IDS = ['topleft', 'goalbar', 'topright', 'rail', 'sidepanel', 'plan', 'toolbar', 'sys', 'hint', 'playbar', 'cardlayer'];
+const HUD_IDS = ['topleft', 'goalbar', 'topright', 'rail', 'sidepanel', 'plan', 'teambar', 'toolbar', 'sys', 'hint', 'playbar', 'cardlayer'];
 let hudRects: DOMRect[] = [];
 let hudRectT = 0;
 function refreshHudRects() {
@@ -497,13 +540,39 @@ function feedHud(state = session.shown) {
 }
 
 // ------------------------------------------------------------------ marathon: runners stream through Centrum
-const centrumNodes = world.graph.nodes.map((n, i) => ({ n, i })).filter(({ n }) => wijkAt(n.x, n.z) === 'centrum' && n.edges.length > 1).map(({ i }) => i);
+// route: Coolsingel (centrum) -> Erasmusbrug (Kop van Zuid); runners start in the first half and finish in the second
+const ROUTE = { a: WIJK_BY_ID.centrum.focus, b: WIJK_BY_ID.kopbrug.focus };
+const routeT = (x: number, z: number) => {
+  const dx = ROUTE.b[0] - ROUTE.a[0], dz = ROUTE.b[1] - ROUTE.a[1], t = ((x - ROUTE.a[0]) * dx + (z - ROUTE.a[1]) * dz) / (dx * dx + dz * dz);
+  const px = ROUTE.a[0] + dx * clamp(t), pz = ROUTE.a[1] + dz * clamp(t);
+  return { t, d: Math.hypot(x - px, z - pz) };
+};
+const routeNodes = world.graph.nodes.map((n, i) => ({ i, ...routeT(n.x, n.z) })).filter((r) => r.d < 16 && r.t > -0.1 && r.t < 1.1 && world.graph.nodes[r.i].edges.length > 1);
+const routeStart = routeNodes.filter((r) => r.t < 0.5).map((r) => r.i), routeEnd = routeNodes.filter((r) => r.t >= 0.5).map((r) => r.i);
+const centrumNodes = routeStart.length && routeEnd.length ? [] : world.graph.nodes.map((n, i) => ({ n, i })).filter(({ n }) => wijkAt(n.x, n.z) === 'centrum' && n.edges.length > 1).map(({ i }) => i);
 let runnerT = 0;
+// the closed route as an orange ribbon on the road, so the player sees what the partners closed
+const routeGroup = new THREE.Group(); routeGroup.visible = false; scene.add(routeGroup);
+{
+  const near = (x: number, z: number) => world.graph.nodes.reduce((b, n, i) => (Math.hypot(n.x - x, n.z - z) < b.d ? { i, d: Math.hypot(n.x - x, n.z - z) } : b), { i: 0, d: 1e9 }).i;
+  const path = shortestPath(world.graph, near(ROUTE.a[0], ROUTE.a[1]), near(ROUTE.b[0], ROUTE.b[1]), { ignoreOneway: true, avoid: (e) => e.kind === 'highway' });
+  const mat = new THREE.MeshBasicMaterial({ color: '#ff6a3d', transparent: true, opacity: 0.6, depthWrite: false, fog: false, toneMapped: false });
+  for (let i = 0; path && i + 1 < path.length; i++) {
+    const A = world.graph.nodes[path[i]], B = world.graph.nodes[path[i + 1]], L = Math.hypot(B.x - A.x, B.z - A.z);
+    if (L < 0.1) continue;
+    const m = new THREE.Mesh(new THREE.BoxGeometry(L, 0.08, 3.4), mat);
+    m.position.set((A.x + B.x) / 2, Math.max(A.y, B.y) + 0.12, (A.z + B.z) / 2); m.rotation.y = -Math.atan2(B.z - A.z, B.x - A.x); m.renderOrder = 4;
+    routeGroup.add(m);
+  }
+}
 function runMarathon(dt: number) {
   runnerT -= dt;
-  if (runnerT > 0 || crowd.count > 150 || centrumNodes.length < 2) return;
+  if (runnerT > 0 || crowd.count > 150) return;
   runnerT = 0.12;
-  const a = centrumNodes[Math.floor(Math.random() * centrumNodes.length)], b = centrumNodes[Math.floor(Math.random() * centrumNodes.length)];
+  const pick = (l: number[]) => l[Math.floor(Math.random() * l.length)];
+  const useRoute = routeStart.length > 0 && routeEnd.length > 0;
+  if (!useRoute && centrumNodes.length < 2) return;
+  const a = useRoute ? pick(routeStart) : pick(centrumNodes), b = useRoute ? pick(routeEnd) : pick(centrumNodes);
   if (a !== b) crowd.sendBetween(a, b, 4.6);
 }
 
@@ -520,9 +589,28 @@ function enterPlan(first = false) {
   if (!first || news.length) {
     const g = news.find((n) => n.kind === 'groei'), a = news.find((n) => n.kind === 'marathon-aankondiging'), m = news.find((n) => n.kind === 'marathon');
     if (g) hud.toast(`${g.label}`, 'Nieuws · meer bewoners en bezoekers', 6500);
-    else if (a) hud.toast('De Marathon Rotterdam komt eraan', `Nieuws · over een kwartaal moet Centrum onder de ${GOAL.marathon.maxSearch} minuten zoeken`, 7000);
     else if (m) hud.toast('Marathon Rotterdam is dit kwartaal!', 'Nieuws · het Centrum loopt vol', 6500);
+    void a;
   }
+  if (!first) window.setTimeout(() => quarterCards(), 700);
+}
+
+/** cards that open at the start of a plan phase: dilemma (Q2), Marathon announcement (Q3), Moment panel (Q4) */
+let pendingSap: string | null = null;
+function flushSap() {
+  if (!pendingSap || game.phase !== 'plan') return;
+  const text = pendingSap; pendingSap = null;
+  cards.show({ id: 'sap-' + session.quarter + '-' + Math.random().toString(36).slice(2, 6), name: 'Sap', role: 'Adviseur · oud-MT', svg: SAP_SVG, text, ms: 16000 });
+}
+function quarterCards() {
+  if (game.phase !== 'plan' || tutorial.active) { flushSap(); return; }
+  if (session.isDilemmaQuarter() && !session.dilemmaChoice) {
+    ui.showDilemma((k) => { session.dilemmaChoice = k; afterPlanChange(); hud.toast('Keuze genoteerd', 'Je ziet de reacties in de afrekening', 4200); window.setTimeout(flushSap, 600); });
+  } else if (session.news().some((n) => n.kind === 'marathon-aankondiging')) {
+    ui.showMomentAnnounce(() => window.setTimeout(flushSap, 600));
+  } else if (session.isMomentQuarter()) {
+    ui.openMoment(); flushSap();
+  } else flushSap();
 }
 
 function commitQuarter() {
@@ -557,7 +645,7 @@ function commitQuarter() {
   feedHud(res.next); feedCars(res.next);
   $('playbar').classList.remove('hidden');
   $('play-lbl').textContent = `Kwartaal ${res.q + 1} loopt…`;
-  if (res.q === GOAL.marathon.quarter) hud.banner('Marathon Rotterdam!', 'Het Centrum loopt vol: kijk hoe lang auto’s zoeken.');
+  if (res.q === GOAL.marathon.quarter) hud.banner('Marathon Rotterdam!', 'Coolsingel en Erasmusbrug zijn dicht: kijk hoe lang auto’s zoeken.');
   else hud.clearBanner();
   if (audio.started) { audio.whoosh(); audio.chime(); }
   env.hour = 8; game.hourTarget = 8;
@@ -590,13 +678,12 @@ ui.onContinue = () => {
     if (audio.started) audio.chime();
     return;
   }
+  pendingSap = sapAdvice(session, res);
   enterPlan();
-  if (res.q === 0 && !game.sapShown) {
-    game.sapShown = true;
-    window.setTimeout(() => cards.show({ id: 'sap', name: 'Sap', role: 'Adviseur · oud-MT', svg: SAP_SVG, text: sapAdvice(session, res), ms: 14000 }), 600);
-  }
+
 };
 ui.onReplay = () => {
+  pendingSap = null;
   ui.hideModal();
   session.reset();
   resetWorld();
@@ -614,7 +701,6 @@ function resetWorld() {
   for (const l of world.lots) { l.subs = [true, true, true, true]; l.free = true; }
   placedAnims.length = 0;
   vis.clear();
-  game.sapShown = false;
 }
 
 // ------------------------------------------------------------------ title -> play
@@ -703,6 +789,8 @@ function tick(dt: number) {
   } else if (game.phase === 'plan' || game.phase === 'after' || game.phase === 'eind') {
     if (game.phase === 'plan') env.hour = damp(env.hour, game.hourTarget, 2.5, dt);
   }
+  routeGroup.visible = (game.phase === 'plan' || game.phase === 'play') && session.quarter === GOAL.marathon.quarter || (game.phase === 'play' && game.playRes?.q === GOAL.marathon.quarter);
+  crowd.scaleMul = game.phase === 'play' && game.playRes?.q === GOAL.marathon.quarter ? 2.6 : 1;
   env.update(dt, time);
   world.setWet(env.wet);
   world.update(dt);
@@ -821,6 +909,9 @@ function tick(dt: number) {
     hud.setClock(env.hour, game.phase !== 'play', env.night);
     audio.setState(clamp(cars.searching / 30), env.rain, env.night);
   }
+  heat.setData(Object.fromEntries(Object.values(session.wijkViews(game.phase === 'play' && !game.chipsNew && game.playRes ? game.playRes.old : session.shown)).map((w) => [w.id, w.search])));
+  heat.setVisible(ui.heatOn && game.phase === 'plan' && !game.tool && (!tutorial.active || tutorial.step >= 3));
+  heat.update(dt);
   updateChips(dt);
   tutorial.update();
 }
@@ -868,6 +959,8 @@ if (debug) {
   freeze() { frozen = true; },
   thaw() { if (frozen) { frozen = false; clock.update(); requestAnimationFrame(frame); } },
   tier() { return tier; },
+  /** debug: size of the marathon route node sets and how many random runner paths can be found */
+  routeTest() { let ok = 0; for (let i = 0; i < 20 && routeStart.length && routeEnd.length; i++) if (crowd.sendBetween(routeStart[i % routeStart.length], routeEnd[(i * 7) % routeEnd.length], 4.6)) ok++; return { rs: routeStart.length, re: routeEnd.length, cn: centrumNodes.length, ok, count: crowd.count }; },
   fmtMin,
   /** screen position of the free bouwplek in a wijk that is nearest to the centre of the screen (tests click there) */
   lotXY(w: WijkId, n = 0, small = false) {

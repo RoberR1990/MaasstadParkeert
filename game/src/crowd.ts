@@ -22,6 +22,7 @@ export class Crowd {
   private y = new THREE.Vector3(0, 1, 0);
   private t = 0;
   count = 0;
+  scaleMul = 1;
 
   constructor(private g: Graph, cap = 420) {
     this.body = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.2, 0.26, 0.62, 6).translate(0, 0.31, 0), new THREE.MeshStandardMaterial({ roughness: 0.8 }), cap);
@@ -76,7 +77,7 @@ export class Crowd {
       const bob = Math.abs(Math.sin(this.t * 9 + w.phase)) * 0.06;
       this.p.set(A.x + (B.x - A.x) * t - dz * off, A.y + (B.y - A.y) * t + 0.07 + bob, A.z + (B.z - A.z) * t + dx * off);
       this.q.setFromAxisAngle(this.y, -Math.atan2(dz, dx));
-      this.s.setScalar(Math.min(1, w.fade) * 1.75);
+      this.s.setScalar(Math.min(1, w.fade) * 1.75 * this.scaleMul);
       this.m.compose(this.p, this.q, this.s);
       this.body.setMatrixAt(i, this.m); this.head.setMatrixAt(i, this.m);
     }
